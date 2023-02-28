@@ -13,9 +13,16 @@ public class GraphGrid : MonoBehaviour
 
     private void Start()
     {
+        AddNodesToGraph();
+        AddEdgesToGraph();
+        Debug.Log(_gridGraph.EdgeCount);
+    }
+
+    private void AddNodesToGraph()
+    {
         foreach (Node node in _nodes)
         {
-            if(node.nodeType == NodeTypeEnum.WALKABLE)
+            if (node.nodeType == NodeTypeEnum.WALKABLE)
             {
                 _gridGraph.AddVertex(node);
                 Instantiate(_nodeMarker, node.transform);
@@ -23,18 +30,19 @@ public class GraphGrid : MonoBehaviour
                 _nodeDict.Add(node._position, node);
             }
         }
+    }
 
+    private void AddEdgesToGraph()
+    {
         foreach (Node node in _gridGraph.Vertices)
         {
             foreach (Vector2 dir in _dirs)
             {
                 if (_nodeDict.TryGetValue(node._position + dir, out Node value))
                 {
-                     _gridGraph.AddEdge(new TaggedUndirectedEdge<Node, int>(node, value, 5));
+                    _gridGraph.AddEdge(new TaggedUndirectedEdge<Node, int>(node, value, 5));
                 }
             }
         }
-        Debug.Log(_gridGraph.EdgeCount);
     }
-
 }
