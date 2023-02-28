@@ -7,6 +7,8 @@ public class GraphGrid : MonoBehaviour
 {
     [SerializeField] Node[] _nodes;
     [SerializeField] GameObject _nodeMarker;
+    [SerializeField] GameObject _edgeRenderer;
+    [SerializeField] Transform _renderedEdgesParent;
     Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
     Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
     UndirectedGraph<Node,TaggedUndirectedEdge<Node,int>> _gridGraph = new UndirectedGraph<Node, TaggedUndirectedEdge<Node, int>>();
@@ -45,4 +47,5 @@ public class GraphGrid : MonoBehaviour
             }
         }
     }
+
 }
