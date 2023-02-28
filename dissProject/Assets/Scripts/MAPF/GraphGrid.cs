@@ -17,6 +17,7 @@ public class GraphGrid : MonoBehaviour
     {
         AddNodesToGraph();
         AddEdgesToGraph();
+        RenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
     }
 
@@ -31,6 +32,14 @@ public class GraphGrid : MonoBehaviour
 
                 _nodeDict.Add(node._position, node);
             }
+        }
+    }
+    private void RenderEdges()
+    {
+        foreach (TaggedUndirectedEdge<Node, int> edge in _gridGraph.Edges)
+        {
+            LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
+            lineRenderer.SetPositions(new Vector3[2] { edge.Source._position, edge.Target._position });
         }
     }
 
