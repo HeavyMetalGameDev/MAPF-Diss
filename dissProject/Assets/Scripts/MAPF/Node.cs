@@ -5,16 +5,17 @@ using UnityEngine;
 
 public class Node : MonoBehaviour, IComparable<Node>
 {
-    [SerializeField] public Vector2 _position;
+    [SerializeField] public Vector2 position;
     [SerializeField] public NodeTypeEnum nodeType;
+    public GridMarker _nodeMarker;
 
     public int CompareTo(Node compareNode)
     {
-        if(_position.x > compareNode._position.x || _position.y > compareNode._position.y)
+        if(position.x > compareNode.position.x || position.y > compareNode.position.y)
         {
             return 1;
         }
-        else if (_position.x < compareNode._position.x || _position.y < compareNode._position.y)
+        else if (position.x < compareNode.position.x || position.y < compareNode.position.y)
         {
             return -1;
         }
@@ -25,6 +26,6 @@ public class Node : MonoBehaviour, IComparable<Node>
     }
     private void Awake()
     {
-        _position = new Vector2(transform.position.x, transform.position.z);
+        position = new Vector2(transform.position.x, transform.position.z);
     }
 }
