@@ -23,4 +23,8 @@ public class Node : MonoBehaviour, IComparable<Node>
             return 0;
         }
     }
+    private void Awake()
+    {
+        _position = new Vector2(transform.position.x, transform.position.z);
+    }
 }

@@ -15,10 +15,15 @@ public class GraphGrid : MonoBehaviour
 
     private void Start()
     {
+        GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
         RenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
+    }
+    private void GetNodesInChildren()
+    {
+        _nodes = GetComponentsInChildren<Node>();
     }
 
     private void AddNodesToGraph()
