@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-    [SerializeField] Vector2 _position;
+    [SerializeField] public Vector2 _position;
 }
