@@ -112,8 +112,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ba5a7fee54b4124d849cf5938124992, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _position: {x: 0, y: 0}
+  position: {x: 0, y: 0}
   nodeType: 0
+  _nodeMarker: {fileID: 455896012210672493, guid: 0ac9cee2d6d8a344483c65945033c235, type: 3}
 --- !u!114 &61163357217169435
 MonoBehaviour:
   m_ObjectHideFlags: 0
