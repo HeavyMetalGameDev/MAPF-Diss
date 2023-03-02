@@ -13,7 +13,8 @@ public class GraphGrid : MonoBehaviour
     public static RefreshGrid refreshGrid;
     Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
     Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
-    UndirectedGraph<Node,TaggedUndirectedEdge<Node,int>> _gridGraph = new UndirectedGraph<Node, TaggedUndirectedEdge<Node, int>>();
+    AStarManager aStarManager = new AStarManager();
+    BidirectionalGraph<Node,TaggedUndirectedEdge<Node,int>> _gridGraph = new BidirectionalGraph<Node, TaggedUndirectedEdge<Node, int>>();
 
     private void Start()
     {
@@ -22,6 +23,7 @@ public class GraphGrid : MonoBehaviour
         AddEdgesToGraph();
         RenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
+        AStarAlgorithm();
     }
 
     private void OnEnable()
@@ -112,4 +114,9 @@ public class GraphGrid : MonoBehaviour
         }
     }
 
+    private void AStarAlgorithm()
+    {
+        aStarManager.AttachGraph(_gridGraph);
+        aStarManager.ComputeDijkstraPath(_nodes[0], _nodes[21]);
+    }
 }
