@@ -117,6 +117,6 @@ public class GraphGrid : MonoBehaviour
     private void AStarAlgorithm()
     {
         aStarManager.AttachGraph(_gridGraph);
-        aStarManager.ComputeDijkstraPath(_nodes[0], _nodes[21]);
+        aStarManager.ComputeAStarPath(_nodes[0], _nodes[21]);
     }
 }

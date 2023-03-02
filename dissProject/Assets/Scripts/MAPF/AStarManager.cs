@@ -8,7 +8,9 @@ using QuikGraph.Algorithms.Observers;
 public class AStarManager
 {  
     DijkstraShortestPathAlgorithm<Node, TaggedUndirectedEdge<Node, int>> dijkstrasAlgorithm;
+    AStarShortestPathAlgorithm<Node, TaggedUndirectedEdge<Node, int>> aStarAlgorithm;
     Func<TaggedUndirectedEdge<Node, int>, double> edgeCost = edge => 5 ;
+    Func<Node, double> costHeuristic = edge => 5;
     BidirectionalGraph<Node, TaggedUndirectedEdge<Node, int>> _gridGraph;
 
     public void ComputeDijkstraPath(Node source, Node destination)
@@ -24,6 +26,25 @@ public class AStarManager
         if(predecessors.TryGetPath(destination,out IEnumerable<TaggedUndirectedEdge<Node, int>> path))
         {
             foreach(TaggedUndirectedEdge<Node, int> edge in path)
+            {
+                Debug.Log(edge);
+            }
+        }
+    }
+
+    public void ComputeAStarPath(Node source, Node destination)
+    {
+        aStarAlgorithm = new AStarShortestPathAlgorithm<Node, TaggedUndirectedEdge<Node, int>>(_gridGraph, edgeCost, costHeuristic);
+        VertexPredecessorRecorderObserver<Node, TaggedUndirectedEdge<Node, int>> predecessors = new VertexPredecessorRecorderObserver<Node, TaggedUndirectedEdge<Node, int>>();
+
+        using (predecessors.Attach(aStarAlgorithm))
+        {
+            aStarAlgorithm.Compute(source);
+        }
+
+        if (predecessors.TryGetPath(destination, out IEnumerable<TaggedUndirectedEdge<Node, int>> path))
+        {
+            foreach (TaggedUndirectedEdge<Node, int> edge in path)
             {
                 Debug.Log(edge);
             }
