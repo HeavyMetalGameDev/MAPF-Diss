@@ -8,7 +8,7 @@ public class GridMarker : MonoBehaviour
     {
         if (isWalkable)
         {
-            GetComponentInChildren<SpriteRenderer>().color = Color.green;
+            GetComponentInChildren<SpriteRenderer>().color = Color.gray;
         }
         else
         {
