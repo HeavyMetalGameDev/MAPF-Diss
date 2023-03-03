@@ -13,7 +13,7 @@ public class AStarManager
     Func<Node, double> costHeuristic = edge => 5;
     BidirectionalGraph<Node, TaggedUndirectedEdge<Node, int>> _gridGraph;
 
-    public void ComputeDijkstraPath(Node source, Node destination)
+    public IEnumerable<TaggedUndirectedEdge<Node, int>> ComputeDijkstraPath(Node source, Node destination)
     {
         dijkstrasAlgorithm = new DijkstraShortestPathAlgorithm<Node, TaggedUndirectedEdge<Node, int>>(_gridGraph, edgeCost);
         VertexPredecessorRecorderObserver<Node, TaggedUndirectedEdge<Node, int>> predecessors = new VertexPredecessorRecorderObserver<Node, TaggedUndirectedEdge<Node, int>>();
@@ -30,9 +30,10 @@ public class AStarManager
                 Debug.Log(edge);
             }
         }
+        return path;
     }
 
-    public void ComputeAStarPath(Node source, Node destination)
+    public IEnumerable<TaggedUndirectedEdge<Node, int>> ComputeAStarPath(Node source, Node destination)
     {
         aStarAlgorithm = new AStarShortestPathAlgorithm<Node, TaggedUndirectedEdge<Node, int>>(_gridGraph, edgeCost, costHeuristic);
         VertexPredecessorRecorderObserver<Node, TaggedUndirectedEdge<Node, int>> predecessors = new VertexPredecessorRecorderObserver<Node, TaggedUndirectedEdge<Node, int>>();
@@ -49,6 +50,7 @@ public class AStarManager
                 Debug.Log(edge);
             }
         }
+        return path;
     }
 
     public void AttachGraph(BidirectionalGraph<Node, TaggedUndirectedEdge<Node, int>> graph)

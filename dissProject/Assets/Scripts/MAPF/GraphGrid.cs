@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using QuikGraph;
+using System.Linq;
 
 public class GraphGrid : MonoBehaviour
 {
@@ -117,6 +118,20 @@ public class GraphGrid : MonoBehaviour
     private void AStarAlgorithm()
     {
         aStarManager.AttachGraph(_gridGraph);
-        aStarManager.ComputeAStarPath(_nodes[0], _nodes[21]);
+        List<TaggedUndirectedEdge<Node, int>> path = aStarManager.ComputeAStarPath(_nodes[0], _nodes[21]).ToList();
+        foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
+        {
+            Destroy(child.gameObject);
+        }
+        foreach (TaggedUndirectedEdge<Node, int> edge in _gridGraph.Edges)
+        {
+            LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
+            lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
+            if (path.Contains(edge))
+            {
+                lineRenderer.startColor = Color.green;
+                lineRenderer.endColor = Color.green;
+            }
+        }
     }
 }
