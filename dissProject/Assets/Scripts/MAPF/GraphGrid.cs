@@ -124,11 +124,11 @@ public class GraphGrid : MonoBehaviour
 
     private void AStarAlgorithmAllAgents()
     {
-        aStarManager.AttachGraph(_gridGraph);
         foreach (MAPFAgent agent in _MAPFAgents)
         {
+            aStarManager.AttachGraph(_gridGraph);
             Debug.Log(agent.currentNode);
-            IEnumerable<UndirectedEdge<Node>> path = aStarManager.ComputeDijkstraPath(agent.currentNode, agent.destinationNode);
+            List<UndirectedEdge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             agent.SetPath(path);
             Debug.Log(path);
             foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
