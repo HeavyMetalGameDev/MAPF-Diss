@@ -8,5 +8,6 @@ public class MAPFAgent : MonoBehaviour
 {
     Node _destinationNode;
     Node _currentNode;
-    List<TaggedUndirectedEdge<Node, int>> path;
+    Node _nextNode;
+    List<UndirectedEdge<Node>> path;
 }

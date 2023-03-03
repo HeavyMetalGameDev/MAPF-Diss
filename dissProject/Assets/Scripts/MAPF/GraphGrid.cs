@@ -15,7 +15,7 @@ public class GraphGrid : MonoBehaviour
     Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
     Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
     AStarManager aStarManager = new AStarManager();
-    BidirectionalGraph<Node,TaggedUndirectedEdge<Node,int>> _gridGraph = new BidirectionalGraph<Node, TaggedUndirectedEdge<Node, int>>();
+    BidirectionalGraph<Node, UndirectedEdge<Node>> _gridGraph = new BidirectionalGraph<Node, UndirectedEdge<Node>>();
 
     private void Start()
     {
@@ -60,14 +60,14 @@ public class GraphGrid : MonoBehaviour
                 {
                     if (value.nodeType.Equals(NodeTypeEnum.WALKABLE))
                     {
-                        _gridGraph.AddEdge(new TaggedUndirectedEdge<Node, int>(node, value, 5));
+                        _gridGraph.AddEdge(new UndirectedEdge<Node>(node, value));
                     }
                 }
                 if (_nodeDict.TryGetValue(node.position - dir, out Node value2))
                 {
                     if (value2.nodeType.Equals(NodeTypeEnum.WALKABLE))
                     {
-                        _gridGraph.AddEdge(new TaggedUndirectedEdge<Node, int>(value2, node, 5));
+                        _gridGraph.AddEdge(new UndirectedEdge<Node>(value2, node));
                     }
                 }
 
@@ -94,7 +94,7 @@ public class GraphGrid : MonoBehaviour
     }
     private void RenderEdges()
     {
-        foreach (TaggedUndirectedEdge<Node, int> edge in _gridGraph.Edges)
+        foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
         {
             LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
             lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
@@ -109,7 +109,7 @@ public class GraphGrid : MonoBehaviour
             {
                 if (_nodeDict.TryGetValue(node.position + dir, out Node value) && value.nodeType.Equals(NodeTypeEnum.WALKABLE))
                 {
-                    _gridGraph.AddEdge(new TaggedUndirectedEdge<Node, int>(node, value, 5));
+                    _gridGraph.AddEdge(new UndirectedEdge<Node>(node, value));
                 }
             }
         }
@@ -118,12 +118,12 @@ public class GraphGrid : MonoBehaviour
     private void AStarAlgorithm()
     {
         aStarManager.AttachGraph(_gridGraph);
-        List<TaggedUndirectedEdge<Node, int>> path = aStarManager.ComputeAStarPath(_nodes[0], _nodes[21]).ToList();
+        List<UndirectedEdge<Node>> path = aStarManager.ComputeAStarPath(_nodes[0], _nodes[21]).ToList();
         foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
         {
             Destroy(child.gameObject);
         }
-        foreach (TaggedUndirectedEdge<Node, int> edge in _gridGraph.Edges)
+        foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
         {
             LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
             lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
