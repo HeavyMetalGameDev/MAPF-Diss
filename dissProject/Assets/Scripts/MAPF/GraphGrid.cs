@@ -10,21 +10,22 @@ public class GraphGrid : MonoBehaviour
     [SerializeField] GameObject _nodeMarker;
     [SerializeField] GameObject _edgeRenderer;
     [SerializeField] Transform _renderedEdgesParent;
+    [SerializeField] MAPFAgent[] _MAPFAgents;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
     Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
     Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
     AStarManager aStarManager = new AStarManager();
-    BidirectionalGraph<Node, UndirectedEdge<Node>> _gridGraph = new BidirectionalGraph<Node, UndirectedEdge<Node>>();
+    BidirectionalGraph<Node, UndirectedEdge<Node>> _gridGraph = new BidirectionalGraph<Node, UndirectedEdge<Node>>(true);
 
     private void Start()
     {
         GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        RenderEdges();
+        CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
-        AStarAlgorithm();
+        AStarAlgorithmAllAgents();
     }
 
     private void OnEnable()
@@ -44,10 +45,7 @@ public class GraphGrid : MonoBehaviour
     {
         if (node.nodeType.Equals(NodeTypeEnum.NOT_WALKABLE))
         {
-            _gridGraph.ClearEdges(node);
-            _gridGraph.RemoveVertex(node);
-            _nodeDict[node.position] = node;
-            node._nodeMarker.ToggleMarker(false);
+            RemoveNodeAndEdges(node);
         }
         else if (node.nodeType.Equals(NodeTypeEnum.WALKABLE))
         {
@@ -77,8 +75,17 @@ public class GraphGrid : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        RenderEdges();
+        CreateAllRenderEdges();
     }
+
+    private void RemoveNodeAndEdges(Node node)
+    {
+        _gridGraph.ClearEdges(node);
+        _gridGraph.RemoveVertex(node);
+        _nodeDict[node.position] = node;
+        node._nodeMarker.ToggleMarker(false);
+    }
+
     private void AddNodesToGraph()
     {
         foreach (Node node in _nodes)
@@ -87,19 +94,18 @@ public class GraphGrid : MonoBehaviour
             {
                 _gridGraph.AddVertex(node);
                 node._nodeMarker = Instantiate(_nodeMarker, node.transform).GetComponent<GridMarker>();
-
                 _nodeDict.Add(node.position, node);
             }
         }
     }
-    private void RenderEdges()
+    private void CreateAllRenderEdges()
     {
         foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
         {
             LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
             lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
         }
-    }
+    } 
 
     private void AddEdgesToGraph()
     {
@@ -110,28 +116,36 @@ public class GraphGrid : MonoBehaviour
                 if (_nodeDict.TryGetValue(node.position + dir, out Node value) && value.nodeType.Equals(NodeTypeEnum.WALKABLE))
                 {
                     _gridGraph.AddEdge(new UndirectedEdge<Node>(node, value));
+                    _gridGraph.AddEdge(new UndirectedEdge<Node>(value, node));
                 }
             }
         }
     }
 
-    private void AStarAlgorithm()
+    private void AStarAlgorithmAllAgents()
     {
         aStarManager.AttachGraph(_gridGraph);
-        List<UndirectedEdge<Node>> path = aStarManager.ComputeAStarPath(_nodes[0], _nodes[21]).ToList();
-        foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
+        foreach (MAPFAgent agent in _MAPFAgents)
         {
-            Destroy(child.gameObject);
-        }
-        foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
-        {
-            LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
-            lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
-            if (path.Contains(edge))
+            Debug.Log(agent.currentNode);
+            IEnumerable<UndirectedEdge<Node>> path = aStarManager.ComputeDijkstraPath(agent.currentNode, agent.destinationNode);
+            agent.SetPath(path);
+            Debug.Log(path);
+            foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
             {
-                lineRenderer.startColor = Color.green;
-                lineRenderer.endColor = Color.green;
+                Destroy(child.gameObject);
+            }
+            foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
+            {
+                LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
+                lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
+                if (path.Contains(edge))
+                {
+                    lineRenderer.startColor = Color.green;
+                    lineRenderer.endColor = Color.green;
+                }
             }
         }
+
     }
 }

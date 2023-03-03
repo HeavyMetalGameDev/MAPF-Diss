@@ -6,8 +6,19 @@ using QuikGraph;
 
 public class MAPFAgent : MonoBehaviour
 {
-    Node _destinationNode;
-    Node _currentNode;
+    [SerializeField]Node _destinationNode;
+    public Node destinationNode { get =>_destinationNode; }
+
+    [SerializeField] Node _currentNode;
+    public Node currentNode { get => _currentNode; }
+
     Node _nextNode;
-    List<UndirectedEdge<Node>> path;
+    public Node nextNode { get => _nextNode; }
+
+    IEnumerable<UndirectedEdge<Node>> path;
+
+    public void SetPath(IEnumerable<UndirectedEdge<Node>> path)
+    {
+        this.path = path;
+    }
 }

@@ -11,18 +11,18 @@ public class Node : MonoBehaviour, IComparable<Node>
 
     public int CompareTo(Node compareNode)
     {
-        if(position.x > compareNode.position.x || position.y > compareNode.position.y)
-        {
-            return 1;
-        }
-        else if (position.x < compareNode.position.x || position.y < compareNode.position.y)
-        {
+       // if(position.x > compareNode.position.x || position.y > compareNode.position.y)
+       // {
             return -1;
-        }
-        else
-        {
-            return 0;
-        }
+       // }
+       // else if (position.x < compareNode.position.x || position.y < compareNode.position.y)
+       // {
+      //      return -1;
+      //  }
+      //  else
+      //  {
+       //     return 0;
+      //  }
     }
     private void Awake()
     {
