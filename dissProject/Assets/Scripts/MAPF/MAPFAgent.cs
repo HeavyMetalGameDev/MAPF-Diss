@@ -6,6 +6,7 @@ using QuikGraph;
 
 public class MAPFAgent : MonoBehaviour
 {
+    float timer = 0;
     [SerializeField]Node _destinationNode;
     public Node destinationNode { get =>_destinationNode; }
 
@@ -24,6 +25,7 @@ public class MAPFAgent : MonoBehaviour
     }
     void ArriveAtNode()
     {
+        _currentNode = _nextNode;
         transform.position = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
         if (path.Count == 0)return;
         path.RemoveAt(0);
@@ -33,8 +35,10 @@ public class MAPFAgent : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        timer += Time.deltaTime;
+        if (timer>=1)
         {
+            timer -= 1;
             ArriveAtNode();
         }
     }

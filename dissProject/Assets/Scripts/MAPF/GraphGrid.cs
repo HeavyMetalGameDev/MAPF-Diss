@@ -76,6 +76,7 @@ public class GraphGrid : MonoBehaviour
             Destroy(child.gameObject);
         }
         CreateAllRenderEdges();
+        AStarAlgorithmAllAgents();
     }
 
     private void RemoveNodeAndEdges(Node node)
@@ -131,7 +132,8 @@ public class GraphGrid : MonoBehaviour
             List<UndirectedEdge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             agent.SetPath(path);
             Debug.Log(path);
-            foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
+
+            /*foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
             {
                 Destroy(child.gameObject);
             }
@@ -145,6 +147,7 @@ public class GraphGrid : MonoBehaviour
                     lineRenderer.endColor = Color.green;
                 }
             }
+            */
         }
 
     }
