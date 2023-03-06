@@ -18,19 +18,23 @@ public class MAPFAgent : MonoBehaviour
 
     public List<UndirectedEdge<Node>> path;
 
+    Vector3 _nextVector;
+
     public void SetPath(List<UndirectedEdge<Node>> path)
     {
         this.path = path;
         _nextNode = path[0].Target;
+        _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
     }
     public void SetDestination(Node node)
     {
         _destinationNode = node;
+        
     }
     void ArriveAtNode()
     {
         _currentNode = _nextNode;
-        transform.position = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
+
         if (path.Count == 0)return;
         path.RemoveAt(0);
         if (path.Count == 0)
@@ -39,11 +43,13 @@ public class MAPFAgent : MonoBehaviour
             return;
         }
         _nextNode = path[0].Target;
-        
+        _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
+
     }
     private void Update()
     {
         timer += Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 5*Time.deltaTime);
         if (timer>=1)
         {
             timer -= 1;

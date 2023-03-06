@@ -11,6 +11,7 @@ public class GraphGrid : MonoBehaviour
     [SerializeField] GameObject _edgeRenderer;
     [SerializeField] Transform _renderedEdgesParent;
     [SerializeField] MAPFAgent[] _MAPFAgents;
+    [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
     Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
@@ -159,7 +160,17 @@ public class GraphGrid : MonoBehaviour
 
     private void NewDestinationAgent(MAPFAgent agent)
     {
-        agent.SetDestination(_nodes[Random.Range(0, _nodes.Length)]);
+        SetNodeMaterial(agent.destinationNode, _defaultMaterial);
+
+        Node randomNode = _nodes[Random.Range(0, _nodes.Length)];
+        agent.SetDestination(randomNode);
+
+        SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
+        
         AStarAlgorithmAllAgents();
+    }
+    private void SetNodeMaterial(Node node,Material material)
+    {
+        node.GetComponent<MeshRenderer>().material = material;
     }
 }
