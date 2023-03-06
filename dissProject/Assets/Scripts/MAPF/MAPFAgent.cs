@@ -23,13 +23,21 @@ public class MAPFAgent : MonoBehaviour
         this.path = path;
         _nextNode = path[0].Target;
     }
+    public void SetDestination(Node node)
+    {
+        _destinationNode = node;
+    }
     void ArriveAtNode()
     {
         _currentNode = _nextNode;
         transform.position = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
         if (path.Count == 0)return;
         path.RemoveAt(0);
-        if (path.Count == 0) return;
+        if (path.Count == 0)
+        {
+            GraphGrid.agentArrived(this);
+            return;
+        }
         _nextNode = path[0].Target;
         
     }

@@ -10,8 +10,9 @@ public class AStarManager
     DijkstraShortestPathAlgorithm<Node, UndirectedEdge<Node>> dijkstrasAlgorithm;
     AStarShortestPathAlgorithm<Node, UndirectedEdge<Node>> aStarAlgorithm;
     Func<UndirectedEdge<Node>, double> edgeCost = edge => 5 ;
-    Func<Node, double> costHeuristic = edge => 1; //TODO program heuristic function for A*
+    Func<Node, double> costHeuristic = vertex => 1; //TODO program heuristic function for A*
     BidirectionalGraph<Node, UndirectedEdge<Node>> _gridGraph;
+
 
     public IEnumerable<UndirectedEdge<Node>> ComputeDijkstraPath(Node source, Node destination)
     {

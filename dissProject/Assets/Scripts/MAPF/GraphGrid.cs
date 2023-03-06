@@ -18,6 +18,9 @@ public class GraphGrid : MonoBehaviour
     AStarManager aStarManager = new AStarManager();
     BidirectionalGraph<Node, UndirectedEdge<Node>> _gridGraph = new BidirectionalGraph<Node, UndirectedEdge<Node>>(true);
 
+    public delegate void AgentArrived(MAPFAgent agent);
+    public static AgentArrived agentArrived;
+
     private void Start()
     {
         GetNodesInChildren();
@@ -31,10 +34,12 @@ public class GraphGrid : MonoBehaviour
     private void OnEnable()
     {
         refreshGrid += OnGridRefresh;
+        agentArrived += NewDestinationAgent;
     }
     private void OnDisable()
     {
         refreshGrid -= OnGridRefresh;
+        agentArrived -= NewDestinationAgent;
     }
     private void GetNodesInChildren()
     {
@@ -150,5 +155,11 @@ public class GraphGrid : MonoBehaviour
             */
         }
 
+    }
+
+    private void NewDestinationAgent(MAPFAgent agent)
+    {
+        agent.SetDestination(_nodes[Random.Range(0, _nodes.Length)]);
+        AStarAlgorithmAllAgents();
     }
 }
