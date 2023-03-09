@@ -161,8 +161,11 @@ public class GraphGrid : MonoBehaviour
     private void NewDestinationAgent(MAPFAgent agent)
     {
         SetNodeMaterial(agent.destinationNode, _defaultMaterial);
-
-        Node randomNode = _nodes[Random.Range(0, _nodes.Length)];
+        Node randomNode = agent.destinationNode;
+        while (randomNode == agent.destinationNode)
+        {
+            randomNode = _nodes[Random.Range(0, _nodes.Length)];
+        }
         agent.SetDestination(randomNode);
 
         SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
