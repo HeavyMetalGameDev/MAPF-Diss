@@ -16,11 +16,11 @@ public class MAPFAgent : MonoBehaviour
     [SerializeField] Node _nextNode;
     public Node nextNode { get => _nextNode; }
 
-    public List<UndirectedEdge<Node>> path;
+    public List<Edge<Node>> path;
 
     Vector3 _nextVector;
 
-    public void SetPath(List<UndirectedEdge<Node>> path)
+    public void SetPath(List<Edge<Node>> path)
     {
         this.path = path;
         _nextNode = path[0].Target;

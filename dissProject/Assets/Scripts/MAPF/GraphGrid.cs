@@ -17,7 +17,7 @@ public class GraphGrid : MonoBehaviour
     Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
     Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
     AStarManager aStarManager = new AStarManager();
-    BidirectionalGraph<Node, UndirectedEdge<Node>> _gridGraph = new BidirectionalGraph<Node, UndirectedEdge<Node>>(true);
+    BidirectionalGraph<Node, Edge<Node>> _gridGraph = new BidirectionalGraph<Node, Edge<Node>>(true);
 
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
@@ -27,7 +27,7 @@ public class GraphGrid : MonoBehaviour
         GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        CreateAllRenderEdges();
+        //CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
         AStarAlgorithmAllAgents();
     }
@@ -64,14 +64,14 @@ public class GraphGrid : MonoBehaviour
                 {
                     if (value.nodeType.Equals(NodeTypeEnum.WALKABLE))
                     {
-                        _gridGraph.AddEdge(new UndirectedEdge<Node>(node, value));
+                        _gridGraph.AddEdge(new Edge<Node>(node, value));
                     }
                 }
                 if (_nodeDict.TryGetValue(node.position - dir, out Node value2))
                 {
                     if (value2.nodeType.Equals(NodeTypeEnum.WALKABLE))
                     {
-                        _gridGraph.AddEdge(new UndirectedEdge<Node>(value2, node));
+                        _gridGraph.AddEdge(new Edge<Node>(value2, node));
                     }
                 }
 
@@ -107,7 +107,7 @@ public class GraphGrid : MonoBehaviour
     }
     private void CreateAllRenderEdges()
     {
-        foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
+        foreach (Edge<Node> edge in _gridGraph.Edges)
         {
             LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
             lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
@@ -122,8 +122,8 @@ public class GraphGrid : MonoBehaviour
             {
                 if (_nodeDict.TryGetValue(node.position + dir, out Node value) && value.nodeType.Equals(NodeTypeEnum.WALKABLE))
                 {
-                    _gridGraph.AddEdge(new UndirectedEdge<Node>(node, value));
-                    _gridGraph.AddEdge(new UndirectedEdge<Node>(value, node));
+                    _gridGraph.AddEdge(new Edge<Node>(node, value));
+                    _gridGraph.AddEdge(new Edge<Node>(value, node));
                 }
             }
         }
@@ -135,7 +135,7 @@ public class GraphGrid : MonoBehaviour
         {
             aStarManager.AttachGraph(_gridGraph);
             Debug.Log(agent.currentNode);
-            List<UndirectedEdge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
+            List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             agent.SetPath(path);
             Debug.Log(path);
 
@@ -143,7 +143,7 @@ public class GraphGrid : MonoBehaviour
             {
                 Destroy(child.gameObject);
             }
-            foreach (UndirectedEdge<Node> edge in _gridGraph.Edges)
+            foreach (Edge<Node> edge in _gridGraph.Edges)
             {
                 LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
                 lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
@@ -162,9 +162,12 @@ public class GraphGrid : MonoBehaviour
     {
         SetNodeMaterial(agent.destinationNode, _defaultMaterial);
         Node randomNode = agent.destinationNode;
-        while (randomNode == agent.destinationNode)
+        int timeout = 20; //times to attempt random node asignment to avoid deadlock
+        while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE)
         {
             randomNode = _nodes[Random.Range(0, _nodes.Length)];
+            timeout--;
+            if (timeout <= 0) break;
         }
         agent.SetDestination(randomNode);
 
