@@ -27,6 +27,8 @@ public class GraphGrid : MonoBehaviour
         GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
+        SetupAgents();
+        RandomDestinationAllAgents();
         //CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
         AStarAlgorithmAllAgents();
@@ -35,12 +37,12 @@ public class GraphGrid : MonoBehaviour
     private void OnEnable()
     {
         refreshGrid += OnGridRefresh;
-        agentArrived += NewDestinationAgent;
+        agentArrived += NewDestinationAgentAndAStar;
     }
     private void OnDisable()
     {
         refreshGrid -= OnGridRefresh;
-        agentArrived -= NewDestinationAgent;
+        agentArrived -= NewDestinationAgentAndAStar;
     }
     private void GetNodesInChildren()
     {
@@ -81,7 +83,7 @@ public class GraphGrid : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        CreateAllRenderEdges();
+        //CreateAllRenderEdges();
         AStarAlgorithmAllAgents();
     }
 
@@ -158,12 +160,18 @@ public class GraphGrid : MonoBehaviour
 
     }
 
+    private void NewDestinationAgentAndAStar(MAPFAgent agent) //called when an agent arrives at their destination and therefore A* needs to be ran again.
+    {
+        NewDestinationAgent(agent);
+        AStarAlgorithmAllAgents();
+    }
+
     private void NewDestinationAgent(MAPFAgent agent)
     {
         SetNodeMaterial(agent.destinationNode, _defaultMaterial);
         Node randomNode = agent.destinationNode;
         int timeout = 20; //times to attempt random node asignment to avoid deadlock
-        while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE)
+        while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted)
         {
             randomNode = _nodes[Random.Range(0, _nodes.Length)];
             timeout--;
@@ -172,11 +180,35 @@ public class GraphGrid : MonoBehaviour
         agent.SetDestination(randomNode);
 
         SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
-        
-        AStarAlgorithmAllAgents();
     }
+
     private void SetNodeMaterial(Node node,Material material)
     {
         node.GetComponent<MeshRenderer>().material = material;
+    }
+
+    private void RandomDestinationAllAgents()
+    {
+        foreach(MAPFAgent agent in _MAPFAgents)
+        {
+            NewDestinationAgent(agent);
+        }
+    }
+
+    private void SetupAgents()
+    {
+        foreach(MAPFAgent agent in _MAPFAgents)
+        {
+            Vector2 agentPos = new Vector2(agent.transform.position.x,agent.transform.position.z);
+            if (_nodeDict.TryGetValue(agentPos, out Node outNode))
+            {
+                agent.SetCurrent(outNode);
+            }
+            else
+            {
+                Debug.LogError("AGENT SETUP FAILED: AGENT NOT ON GRID POSITION");
+            }
+
+        }
     }
 }

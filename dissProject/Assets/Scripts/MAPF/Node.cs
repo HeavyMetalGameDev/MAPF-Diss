@@ -8,6 +8,7 @@ public class Node : MonoBehaviour, IComparable<Node>
     [SerializeField] public Vector2 position;
     [SerializeField] public NodeTypeEnum nodeType;
     public GridMarker _nodeMarker;
+    public bool isTargeted;
 
     public int CompareTo(Node compareNode)
     {

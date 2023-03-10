@@ -29,30 +29,39 @@ public class MAPFAgent : MonoBehaviour
     public void SetDestination(Node node)
     {
         _destinationNode = node;
+        node.isTargeted = true;
         
+    }
+    public void SetCurrent(Node node)
+    {
+        _currentNode = node;
+        Debug.Log("CURRENT NODE SET");
     }
     void ArriveAtNode()
     {
+        _nextNode.isTargeted = false;
         _currentNode = _nextNode;
 
-        if (path.Count == 0)return;
-        path.RemoveAt(0);
-        if (path.Count == 0)
+        if (path.Count == 0)return; //if there is no path do not do anything
+        path.RemoveAt(0);  //remove the node agent just arrived at from path
+        if (path.Count == 0) //if path is now empty
         {
-            GraphGrid.agentArrived(this);
+            GraphGrid.agentArrived(this); //agent arrived at destination
             return;
         }
         _nextNode = path[0].Target;
+        _nextNode.isTargeted = true;
         _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
 
     }
     private void Update()
     {
         timer += Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 5*Time.deltaTime);
-        if (timer>=1)
+        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
+        if (timer>=.5f)
         {
-            timer -= 1;
+            transform.position = _nextVector;
+            timer -= .5f;
             ArriveAtNode();
         }
     }

@@ -47,10 +47,6 @@ public class AStarManager
 
         if (predecessors.TryGetPath(destination, out IEnumerable<Edge<Node>> path))
         {
-            foreach (Edge<Node> edge in path)
-            {
-                Debug.Log(edge);
-            }
         }
         return path;
     }
