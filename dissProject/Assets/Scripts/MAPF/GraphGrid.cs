@@ -7,6 +7,7 @@ using System.Linq;
 public class GraphGrid : MonoBehaviour
 {
     [SerializeField] Node[] _nodes;
+    [SerializeField] GameObject _nodePrefab;
     [SerializeField] GameObject _nodeMarker;
     [SerializeField] GameObject _edgeRenderer;
     [SerializeField] Transform _renderedEdgesParent;
@@ -19,12 +20,15 @@ public class GraphGrid : MonoBehaviour
     AStarManager aStarManager = new AStarManager();
     BidirectionalGraph<Node, Edge<Node>> _gridGraph = new BidirectionalGraph<Node, Edge<Node>>(true);
 
+    MapReader _mapReader = new MapReader();
+    [SerializeField] string _mapName;
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
 
     private void Start()
     {
-        GetNodesInChildren();
+        GetNodesFromMapReader();
+        //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
         SetupAgents();
@@ -95,14 +99,23 @@ public class GraphGrid : MonoBehaviour
         node._nodeMarker.ToggleMarker(false);
     }
 
+    private void GetNodesFromMapReader()
+    {
+        _nodes = _mapReader.ReadNodesFromFile(_mapName);
+    }
     private void AddNodesToGraph()
     {
         foreach (Node node in _nodes)
         {
+            GameObject createdNode = Instantiate(_nodePrefab);
+            Node createdNodeComponent = createdNode.GetComponent<Node>();
+            createdNodeComponent.position = node.position;
+            createdNodeComponent.nodeType = node.nodeType;
+            createdNode.transform.position = new Vector3(node.position.x,0, node.position.y);
             if (node.nodeType == NodeTypeEnum.WALKABLE)
             {
                 _gridGraph.AddVertex(node);
-                node._nodeMarker = Instantiate(_nodeMarker, node.transform).GetComponent<GridMarker>();
+                createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
                 _nodeDict.Add(node.position, node);
             }
         }

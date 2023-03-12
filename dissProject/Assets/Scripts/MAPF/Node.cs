@@ -10,6 +10,11 @@ public class Node : MonoBehaviour, IComparable<Node>
     public GridMarker _nodeMarker;
     public bool isTargeted;
 
+    public Node(Vector2 position, NodeTypeEnum nodeType)
+    {
+        this.position = position;
+        this.nodeType = nodeType;
+    }
     public int CompareTo(Node compareNode)
     {
        // if(position.x > compareNode.position.x || position.y > compareNode.position.y)

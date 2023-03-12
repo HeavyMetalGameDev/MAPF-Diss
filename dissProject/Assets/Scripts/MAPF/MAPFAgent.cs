@@ -60,7 +60,7 @@ public class MAPFAgent : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
         if (timer>=.5f)
         {
-            transform.position = _nextVector;
+            //transform.position = _nextVector;
             timer -= .5f;
             ArriveAtNode();
         }
