@@ -33,7 +33,7 @@ public class GraphGrid : MonoBehaviour
         AddEdgesToGraph();
         SetupAgents();
         RandomDestinationAllAgents();
-        //CreateAllRenderEdges();
+        CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
         AStarAlgorithmAllAgents();
     }
@@ -103,21 +103,31 @@ public class GraphGrid : MonoBehaviour
     {
         _nodes = _mapReader.ReadNodesFromFile(_mapName);
     }
-    private void AddNodesToGraph()
+    private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
     {
+        int counter = 0;
         foreach (Node node in _nodes)
         {
-            GameObject createdNode = Instantiate(_nodePrefab);
+            bool isWalkable = false; //used to toggle marker colour later in function
+            GameObject createdNode = Instantiate(_nodePrefab,transform);
+
+            //Set node values
             Node createdNodeComponent = createdNode.GetComponent<Node>();
             createdNodeComponent.position = node.position;
             createdNodeComponent.nodeType = node.nodeType;
             createdNode.transform.position = new Vector3(node.position.x,0, node.position.y);
+
             if (node.nodeType == NodeTypeEnum.WALKABLE)
             {
-                _gridGraph.AddVertex(node);
-                createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
-                _nodeDict.Add(node.position, node);
+                isWalkable = true;
+                _gridGraph.AddVertex(createdNodeComponent);
+                
+                _nodeDict.Add(createdNodeComponent.position, createdNodeComponent);
             }
+            createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
+            createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
+            _nodes[counter] = createdNodeComponent;
+            counter += 1;
         }
     }
     private void CreateAllRenderEdges()

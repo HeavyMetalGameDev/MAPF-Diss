@@ -24,7 +24,6 @@ public class MapReader
                     continue;
                 }
                 _map.Add(row);
-                Debug.Log(row);
             }
             _map.Reverse();
             for(int y = 0; y <_map.Count;y++)
