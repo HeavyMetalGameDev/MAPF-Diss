@@ -33,7 +33,7 @@ public class GraphGrid : MonoBehaviour
         AddEdgesToGraph();
         SetupAgents();
         RandomDestinationAllAgents();
-        CreateAllRenderEdges();
+        //CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
         AStarAlgorithmAllAgents();
     }
@@ -124,8 +124,8 @@ public class GraphGrid : MonoBehaviour
                 
                 _nodeDict.Add(createdNodeComponent.position, createdNodeComponent);
             }
-            createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
-            createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
+            //createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
+            //createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
             _nodes[counter] = createdNodeComponent;
             counter += 1;
         }

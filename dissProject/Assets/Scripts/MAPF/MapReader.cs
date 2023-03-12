@@ -36,10 +36,10 @@ public class MapReader
                         newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
                         nodes.Add(newNode);
                     }
-                    else if (nodeChar.Equals('@'))
+                    else if (nodeChar.Equals('@')|| nodeChar.Equals('T'))
                     {
-                        newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
-                        nodes.Add(newNode);
+                        //newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
+                        //nodes.Add(newNode);
                     }
                 }
             }
