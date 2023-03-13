@@ -7,6 +7,7 @@ using System.Linq;
 public class GraphGrid : MonoBehaviour
 {
     [SerializeField] Node[] _nodes;
+    [SerializeField] GameObject _agentPrefab;
     [SerializeField] GameObject _nodePrefab;
     [SerializeField] GameObject _nodeMarker;
     [SerializeField] GameObject _edgeRenderer;
@@ -31,7 +32,8 @@ public class GraphGrid : MonoBehaviour
         //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        SetupAgents();
+        CreateRandomAgents(20);
+        //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
@@ -191,7 +193,7 @@ public class GraphGrid : MonoBehaviour
 
     private void NewDestinationAgent(MAPFAgent agent)
     {
-        SetNodeMaterial(agent.destinationNode, _defaultMaterial);
+        //SetNodeMaterial(agent.destinationNode, _defaultMaterial);
         Node randomNode = agent.destinationNode;
         int timeout = 20; //times to attempt random node asignment to avoid deadlock
         while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted)
@@ -202,7 +204,20 @@ public class GraphGrid : MonoBehaviour
         }
         agent.SetDestination(randomNode);
 
-        SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
+        //SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
+    }
+    private void SetRandomAgentLocation(MAPFAgent agent)
+    {
+        Node randomNode = null;
+        int timeout = 20; //times to attempt random node asignment to avoid deadlock
+        while (randomNode == null || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted)
+        {
+            randomNode = _nodes[Random.Range(0, _nodes.Length)];
+            timeout--;
+            if (timeout <= 0) break;
+        }
+        agent.SetCurrent(randomNode);
+        agent.transform.position = new Vector3(randomNode.position.x, 0, randomNode.position.y);
     }
 
     private void SetNodeMaterial(Node node,Material material)
@@ -232,6 +247,17 @@ public class GraphGrid : MonoBehaviour
                 Debug.LogError("AGENT SETUP FAILED: AGENT NOT ON GRID POSITION");
             }
 
+        }
+    }
+
+    private void CreateRandomAgents(int agentCount)
+    {
+        _MAPFAgents = new MAPFAgent[agentCount];
+        for(int i = 0; i < agentCount; i++)
+        {
+            MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
+            _MAPFAgents[i] = agent;
+            SetRandomAgentLocation(agent);
         }
     }
 }
