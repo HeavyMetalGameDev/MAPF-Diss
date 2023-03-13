@@ -32,7 +32,7 @@ public class GraphGrid : MonoBehaviour
         //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        CreateRandomAgents(20);
+        CreateRandomAgents(200);
         //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
@@ -184,11 +184,20 @@ public class GraphGrid : MonoBehaviour
         }
 
     }
+    private void AStarAlgorithmOneAgent(MAPFAgent agent)
+    {
+        aStarManager.AttachGraph(_gridGraph);
+        Debug.Log(agent.currentNode);
+        List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
+        agent.SetPath(path);
+        Debug.Log(path);
+    }
 
     private void NewDestinationAgentAndAStar(MAPFAgent agent) //called when an agent arrives at their destination and therefore A* needs to be ran again.
     {
         NewDestinationAgent(agent);
-        AStarAlgorithmAllAgents();
+        //AStarAlgorithmAllAgents();
+        AStarAlgorithmOneAgent(agent);
     }
 
     private void NewDestinationAgent(MAPFAgent agent)

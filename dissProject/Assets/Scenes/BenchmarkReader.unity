@@ -237,6 +237,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _nodes: []
+  _agentPrefab: {fileID: 763858357717582011, guid: 95436d8f8560ebd47a5242a6c7f797f5, type: 3}
   _nodePrefab: {fileID: 4560271229496798657, guid: c47a0a7acc5d63c48933c63e8f305346, type: 3}
   _nodeMarker: {fileID: 3066743114196506717, guid: 0ac9cee2d6d8a344483c65945033c235, type: 3}
   _edgeRenderer: {fileID: 2823125830372553528, guid: ec859adb6e55db8488e5a9329f28ed0c, type: 3}
