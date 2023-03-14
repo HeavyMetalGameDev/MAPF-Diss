@@ -35,7 +35,7 @@ public class GraphGrid : MonoBehaviour
         //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        CreateRandomAgents(50);
+        CreateRandomAgents(200);
         //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
@@ -221,18 +221,24 @@ public class GraphGrid : MonoBehaviour
 
         //SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
     }
-    private void SetRandomAgentLocation(MAPFAgent agent)
+    private bool SetRandomAgentLocation(MAPFAgent agent)
     {
         Node randomNode = null;
-        int timeout = 20; //times to attempt random node asignment to avoid deadlock
-        while (randomNode == null || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted)
+        int timeout = 100; //times to attempt random node asignment to avoid deadlock
+        while (randomNode == null || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isOccupied)
         {
             randomNode = _nodes[Random.Range(0, _nodes.Length)];
             timeout--;
-            if (timeout <= 0) break;
+            Debug.Log(timeout);
+            if (timeout <= 0)
+            {
+                return false;
+            }
         }
         agent.SetCurrent(randomNode);
+        randomNode.isOccupied = true;
         agent.transform.position = new Vector3(randomNode.position.x, 0, randomNode.position.y);
+        return true;
     }
 
     private void SetNodeMaterial(Node node,Material material)
@@ -272,7 +278,12 @@ public class GraphGrid : MonoBehaviour
         {
             MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
             _MAPFAgents[i] = agent;
-            SetRandomAgentLocation(agent);
+            if (!SetRandomAgentLocation(agent))
+            {
+                Debug.Log("NO MORE SPACE FOR AGENTS");
+                return;
+            }
+
         }
     }
 
@@ -287,7 +298,7 @@ public class GraphGrid : MonoBehaviour
                 bool conflict = _cf.LookupReservation((int)(edge.Source.position.x*.2f), (int)(edge.Source.position.y*.2f), timestep);
                 if (conflict)
                 {
-                    Debug.Log("Collision"); //do something
+                    Debug.Log("Collision at X:" + edge.Source.position.x+" Y:" +edge.Source.position.y+ " time:"+timestep); //do something
                 }
                 timestep++;
             }

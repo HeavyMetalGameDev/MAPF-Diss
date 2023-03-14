@@ -39,7 +39,6 @@ public class MAPFAgent : MonoBehaviour
     }
     void ArriveAtNode()
     {
-        _nextNode.isTargeted = false;
         _currentNode = _nextNode;
 
         if (path.Count == 0)return; //if there is no path do not do anything
@@ -47,10 +46,10 @@ public class MAPFAgent : MonoBehaviour
         if (path.Count == 0) //if path is now empty
         {
             //GraphGrid.agentArrived(this); //agent arrived at destination
+            destinationNode.isTargeted = false;
             return;
         }
         _nextNode = path[0].Target;
-        _nextNode.isTargeted = true;
         _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
 
     }

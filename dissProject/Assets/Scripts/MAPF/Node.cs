@@ -9,6 +9,7 @@ public class Node : MonoBehaviour, IComparable<Node>
     [SerializeField] public NodeTypeEnum nodeType;
     public GridMarker _nodeMarker;
     public bool isTargeted;
+    public bool isOccupied;
 
     public Node(Vector2 position, NodeTypeEnum nodeType)
     {
