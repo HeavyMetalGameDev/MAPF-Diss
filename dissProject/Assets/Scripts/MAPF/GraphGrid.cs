@@ -20,24 +20,28 @@ public class GraphGrid : MonoBehaviour
     Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
     AStarManager aStarManager = new AStarManager();
     BidirectionalGraph<Node, Edge<Node>> _gridGraph = new BidirectionalGraph<Node, Edge<Node>>(true);
-
+    ConflictManager _cf = new ConflictManager();
     MapReader _mapReader = new MapReader();
     [SerializeField] string _mapName;
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
 
+    int _maxPathLength = 0;
+    Vector2 _mapDimensions;
+
     private void Start()
     {
-        GetNodesFromMapReader();
+        GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        CreateRandomAgents(200);
+        CreateRandomAgents(50);
         //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
         Debug.Log(_gridGraph.EdgeCount);
         AStarAlgorithmAllAgents();
+        CheckForNodeConflicts();
     }
 
     private void OnEnable()
@@ -101,9 +105,10 @@ public class GraphGrid : MonoBehaviour
         node._nodeMarker.ToggleMarker(false);
     }
 
-    private void GetNodesFromMapReader()
+    private void GetDataFromMapReader()
     {
-        _nodes = _mapReader.ReadNodesFromFile(_mapName);
+        _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
+        _nodes = _mapReader.GetNodesFromMap();
     }
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
     {
@@ -164,6 +169,7 @@ public class GraphGrid : MonoBehaviour
             Debug.Log(agent.currentNode);
             List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             agent.SetPath(path);
+            if (path.Count > _maxPathLength) _maxPathLength = path.Count;
             Debug.Log(path);
 
             /*foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
@@ -267,6 +273,24 @@ public class GraphGrid : MonoBehaviour
             MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
             _MAPFAgents[i] = agent;
             SetRandomAgentLocation(agent);
+        }
+    }
+
+    private void CheckForNodeConflicts()
+    {
+        _cf.SetTable((int)_mapDimensions.x, (int)_mapDimensions.y, _maxPathLength);
+        foreach(MAPFAgent agent in _MAPFAgents)
+        {
+            int timestep = 0;
+            foreach(Edge<Node> edge in agent.path)
+            {
+                bool conflict = _cf.LookupReservation((int)(edge.Source.position.x*.2f), (int)(edge.Source.position.y*.2f), timestep);
+                if (conflict)
+                {
+                    Debug.Log("Collision"); //do something
+                }
+                timestep++;
+            }
         }
     }
 }

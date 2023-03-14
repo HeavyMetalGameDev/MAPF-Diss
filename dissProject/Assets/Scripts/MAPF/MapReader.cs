@@ -8,10 +8,8 @@ public class MapReader
     string _mapFileName;
     int _readIgnoreCounter = 4;
     List<string> _map = new List<string>();
-    public Node[] ReadNodesFromFile(string fileName)
+    public Vector2 ReadMapFromFile(string fileName)
     {
-        List<Node> nodes = new List<Node>();
-        Node newNode;
         _mapFileName = fileName;
         using (StreamReader reader = new StreamReader(_mapFileName))
         {
@@ -26,24 +24,32 @@ public class MapReader
                 _map.Add(row);
             }
             _map.Reverse();
-            for(int y = 0; y <_map.Count;y++)
+
+        }
+        return new Vector2(_map[0].Length, _map.Count);
+    }
+
+    public  Node[] GetNodesFromMap()
+    {
+        List<Node> nodes = new List<Node>();
+        Node newNode;
+        for (int y = 0; y < _map.Count; y++)
+        {
+            for (int x = 0; x < _map[y].Length; x++)
             {
-                for(int x = 0; x< _map[y].Length; x++)
+                char nodeChar = _map[y][x];
+                if (nodeChar.Equals('.'))
                 {
-                    char nodeChar = _map[y][x];
-                    if (nodeChar.Equals('.'))
-                    {
-                        newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
-                        nodes.Add(newNode);
-                    }
-                    else if (nodeChar.Equals('@')|| nodeChar.Equals('T'))
-                    {
-                        //newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
-                        //nodes.Add(newNode);
-                    }
+                    newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
+                    nodes.Add(newNode);
+                }
+                else if (nodeChar.Equals('@') || nodeChar.Equals('T'))
+                {
+                    //newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
+                    //nodes.Add(newNode);
                 }
             }
-            return nodes.ToArray();
         }
+        return nodes.ToArray();
     }
 }

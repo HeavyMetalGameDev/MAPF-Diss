@@ -46,7 +46,7 @@ public class MAPFAgent : MonoBehaviour
         path.RemoveAt(0);  //remove the node agent just arrived at from path
         if (path.Count == 0) //if path is now empty
         {
-            GraphGrid.agentArrived(this); //agent arrived at destination
+            //GraphGrid.agentArrived(this); //agent arrived at destination
             return;
         }
         _nextNode = path[0].Target;
