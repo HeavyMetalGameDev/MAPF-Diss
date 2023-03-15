@@ -35,7 +35,7 @@ public class GraphGrid : MonoBehaviour
         //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        CreateRandomAgents(200);
+        CreateRandomAgents(700);
         //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
@@ -167,7 +167,15 @@ public class GraphGrid : MonoBehaviour
         {
             aStarManager.AttachGraph(_gridGraph);
             Debug.Log(agent.currentNode);
-            List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
+            List<Edge<Node>> path = new List<Edge<Node>>();
+            try
+            {
+                path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
+            }
+            catch
+            {
+                Debug.Log("NO PATH FOUND");
+            }
             agent.SetPath(path);
             if (path.Count > _maxPathLength) _maxPathLength = path.Count;
             Debug.Log(path);
@@ -235,6 +243,7 @@ public class GraphGrid : MonoBehaviour
                 return false;
             }
         }
+        Debug.Log("VALID LOCATION FOUND");
         agent.SetCurrent(randomNode);
         randomNode.isOccupied = true;
         agent.transform.position = new Vector3(randomNode.position.x, 0, randomNode.position.y);
@@ -298,9 +307,19 @@ public class GraphGrid : MonoBehaviour
                 bool conflict = _cf.LookupReservation((int)(edge.Source.position.x*.2f), (int)(edge.Source.position.y*.2f), timestep);
                 if (conflict)
                 {
-                    Debug.Log("Collision at X:" + edge.Source.position.x+" Y:" +edge.Source.position.y+ " time:"+timestep); //do something
+                    Debug.Log("Collision"); //do something
                 }
                 timestep++;
+            }
+
+            //make an agent that has finished their path fill out the table while they are stationary
+            for(int i = timestep; i < _maxPathLength; i++)
+            {
+                bool conflict = _cf.LookupReservation((int)(agent.destinationNode.position.x*.2f), (int)(agent.destinationNode.position.y * .2f), i);
+                if (conflict)
+                {
+                    Debug.Log("Collision"); //do something
+                }
             }
         }
     }

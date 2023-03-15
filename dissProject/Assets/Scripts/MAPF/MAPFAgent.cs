@@ -22,6 +22,7 @@ public class MAPFAgent : MonoBehaviour
 
     public void SetPath(List<Edge<Node>> path)
     {
+        if (path.Count == 0) return;
         this.path = path;
         _nextNode = path[0].Target;
         _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
