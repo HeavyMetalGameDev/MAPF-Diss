@@ -217,7 +217,16 @@ public class GraphGrid : MonoBehaviour
     private void NewDestinationAgent(MAPFAgent agent)
     {
         //SetNodeMaterial(agent.destinationNode, _defaultMaterial);
-        Node randomNode = agent.destinationNode;
+        Node randomNode;
+        if (agent.destinationNode)
+        {
+            randomNode = agent.destinationNode;
+        }
+        else
+        {
+            randomNode = null;
+        }
+        
         int timeout = 20; //times to attempt random node asignment to avoid deadlock
         while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted)
         {
@@ -240,6 +249,7 @@ public class GraphGrid : MonoBehaviour
             Debug.Log(timeout);
             if (timeout <= 0)
             {
+                Destroy(agent.gameObject);
                 return false;
             }
         }
@@ -282,18 +292,20 @@ public class GraphGrid : MonoBehaviour
 
     private void CreateRandomAgents(int agentCount)
     {
-        _MAPFAgents = new MAPFAgent[agentCount];
+        List<MAPFAgent> agentsList = new List<MAPFAgent>();
+        
         for(int i = 0; i < agentCount; i++)
         {
             MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
-            _MAPFAgents[i] = agent;
             if (!SetRandomAgentLocation(agent))
             {
                 Debug.Log("NO MORE SPACE FOR AGENTS");
-                return;
+                break;
             }
+            agentsList.Add(agent);
 
         }
+        _MAPFAgents = agentsList.ToArray();
     }
 
     private void CheckForNodeConflicts()
