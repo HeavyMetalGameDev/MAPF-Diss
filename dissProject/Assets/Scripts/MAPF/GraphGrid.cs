@@ -35,7 +35,7 @@ public class GraphGrid : MonoBehaviour
         //GetNodesInChildren();
         AddNodesToGraph();
         AddEdgesToGraph();
-        CreateRandomAgents(700);
+        CreateRandomAgents(2);
         //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
@@ -123,6 +123,7 @@ public class GraphGrid : MonoBehaviour
             createdNodeComponent.position = node.position;
             createdNodeComponent.nodeType = node.nodeType;
             createdNode.transform.position = new Vector3(node.position.x,0, node.position.y);
+            createdNode.name = node.position.ToString();
 
             if (node.nodeType == NodeTypeEnum.WALKABLE)
             {
@@ -170,6 +171,7 @@ public class GraphGrid : MonoBehaviour
             List<Edge<Node>> path = new List<Edge<Node>>();
             try
             {
+                Debug.Log(agent.currentNode +" "+ agent.destinationNode);
                 path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             }
             catch
@@ -228,7 +230,7 @@ public class GraphGrid : MonoBehaviour
         }
         
         int timeout = 20; //times to attempt random node asignment to avoid deadlock
-        while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted)
+        while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted || randomNode == agent.currentNode)
         {
             randomNode = _nodes[Random.Range(0, _nodes.Length)];
             timeout--;
