@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using QuikGraph;
 using System.Linq;
@@ -27,23 +28,59 @@ public class GraphGrid : MonoBehaviour
     public static AgentArrived agentArrived;
 
     int _maxPathLength = 0;
+    int _agentCount = 1;
     Vector2 _mapDimensions;
+    float stopwatchTotal = 0;
 
     private void Start()
     {
         GetDataFromMapReader();
         //GetNodesInChildren();
-        AddNodesToGraph();
-        AddEdgesToGraph();
-        CreateRandomAgents(2);
-        //SetupAgents();
-        RandomDestinationAllAgents();
-        //CreateAllRenderEdges();
-        Debug.Log(_gridGraph.EdgeCount);
-        AStarAlgorithmAllAgents();
-        CheckForNodeConflicts();
+        for (_agentCount = 0; _agentCount <= 10; _agentCount+=1)
+        {
+            SetupAndRecordAStarExecution();
+        }
     }
 
+    private void SetupAndRecordAStarExecution()
+    {
+        int conflictCount = 0;
+        for (int i = 0; i < 100; i++)
+        {
+            AddNodesToGraph();
+            AddEdgesToGraph();
+            CreateRandomAgents(_agentCount);
+            //SetupAgents();
+            RandomDestinationAllAgents();
+            //CreateAllRenderEdges();
+            //UnityEngine.Debug.Log(_gridGraph.EdgeCount);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            AStarAlgorithmAllAgents();
+            stopwatch.Stop();
+            stopwatchTotal += stopwatch.ElapsedMilliseconds;
+            stopwatch.Reset();
+            conflictCount+=CheckForNodeConflicts();
+            ClearAll();
+            foreach (MAPFAgent agent in _MAPFAgents)
+            {
+                Destroy(agent.gameObject);
+            }
+        }
+        UnityEngine.Debug.Log(_agentCount + " Agents: " + conflictCount * .01);
+        //UnityEngine.Debug.Log(_agentCount + " Agents: "+ stopwatchTotal * .05);
+        stopwatchTotal = 0;
+        
+    }
+    private void ClearAll()
+    {
+        _gridGraph.Clear();
+        _nodeDict.Clear();
+        foreach(Node node in _nodes)
+        {
+            Destroy(node.gameObject);
+        }
+    }
     private void OnEnable()
     {
         refreshGrid += OnGridRefresh;
@@ -167,20 +204,18 @@ public class GraphGrid : MonoBehaviour
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             aStarManager.AttachGraph(_gridGraph);
-            Debug.Log(agent.currentNode);
             List<Edge<Node>> path = new List<Edge<Node>>();
             try
             {
-                Debug.Log(agent.currentNode +" "+ agent.destinationNode);
                 path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             }
             catch
             {
-                Debug.Log("NO PATH FOUND");
+                UnityEngine.Debug.Log("NO PATH FOUND");
             }
             agent.SetPath(path);
             if (path.Count > _maxPathLength) _maxPathLength = path.Count;
-            Debug.Log(path);
+            UnityEngine.Debug.Log(path);
 
             /*foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
             {
@@ -203,10 +238,10 @@ public class GraphGrid : MonoBehaviour
     private void AStarAlgorithmOneAgent(MAPFAgent agent)
     {
         aStarManager.AttachGraph(_gridGraph);
-        Debug.Log(agent.currentNode);
+        UnityEngine.Debug.Log(agent.currentNode);
         List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
         agent.SetPath(path);
-        Debug.Log(path);
+        UnityEngine.Debug.Log(path);
     }
 
     private void NewDestinationAgentAndAStar(MAPFAgent agent) //called when an agent arrives at their destination and therefore A* needs to be ran again.
@@ -248,14 +283,13 @@ public class GraphGrid : MonoBehaviour
         {
             randomNode = _nodes[Random.Range(0, _nodes.Length)];
             timeout--;
-            Debug.Log(timeout);
             if (timeout <= 0)
             {
                 Destroy(agent.gameObject);
                 return false;
             }
         }
-        Debug.Log("VALID LOCATION FOUND");
+        UnityEngine.Debug.Log("VALID LOCATION FOUND");
         agent.SetCurrent(randomNode);
         randomNode.isOccupied = true;
         agent.transform.position = new Vector3(randomNode.position.x, 0, randomNode.position.y);
@@ -286,7 +320,7 @@ public class GraphGrid : MonoBehaviour
             }
             else
             {
-                Debug.LogError("AGENT SETUP FAILED: AGENT NOT ON GRID POSITION");
+                UnityEngine.Debug.LogError("AGENT SETUP FAILED: AGENT NOT ON GRID POSITION");
             }
 
         }
@@ -301,7 +335,7 @@ public class GraphGrid : MonoBehaviour
             MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
             if (!SetRandomAgentLocation(agent))
             {
-                Debug.Log("NO MORE SPACE FOR AGENTS");
+                UnityEngine.Debug.Log("NO MORE SPACE FOR AGENTS");
                 break;
             }
             agentsList.Add(agent);
@@ -310,8 +344,9 @@ public class GraphGrid : MonoBehaviour
         _MAPFAgents = agentsList.ToArray();
     }
 
-    private void CheckForNodeConflicts()
+    private int CheckForNodeConflicts()
     {
+        int collisionCount = 0;
         _cf.SetTable((int)_mapDimensions.x, (int)_mapDimensions.y, _maxPathLength);
         foreach(MAPFAgent agent in _MAPFAgents)
         {
@@ -321,7 +356,7 @@ public class GraphGrid : MonoBehaviour
                 bool conflict = _cf.LookupReservation((int)(edge.Source.position.x*.2f), (int)(edge.Source.position.y*.2f), timestep);
                 if (conflict)
                 {
-                    Debug.Log("Collision"); //do something
+                    collisionCount++; //do something
                 }
                 timestep++;
             }
@@ -332,9 +367,10 @@ public class GraphGrid : MonoBehaviour
                 bool conflict = _cf.LookupReservation((int)(agent.destinationNode.position.x*.2f), (int)(agent.destinationNode.position.y * .2f), i);
                 if (conflict)
                 {
-                    Debug.Log("Collision"); //do something
+                    collisionCount++; //do something
                 }
             }
         }
+        return collisionCount;
     }
 }

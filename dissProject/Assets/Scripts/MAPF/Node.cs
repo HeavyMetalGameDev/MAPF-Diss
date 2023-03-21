@@ -10,6 +10,7 @@ public class Node : MonoBehaviour, IComparable<Node>
     public GridMarker _nodeMarker;
     public bool isTargeted;
     public bool isOccupied;
+    public float cost = 1;
 
     public Node(Vector2 position, NodeTypeEnum nodeType)
     {
