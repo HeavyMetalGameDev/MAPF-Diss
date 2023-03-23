@@ -28,7 +28,7 @@ public class GraphGrid : MonoBehaviour
     public static AgentArrived agentArrived;
 
     int _maxPathLength = 0;
-    int _agentCount = 1;
+    int _agentCount = 100;
     Vector2 _mapDimensions;
     float stopwatchTotal = 0;
 
@@ -36,10 +36,11 @@ public class GraphGrid : MonoBehaviour
     {
         GetDataFromMapReader();
         //GetNodesInChildren();
-        for (_agentCount = 0; _agentCount <= 10; _agentCount+=1)
-        {
-            SetupAndRecordAStarExecution();
-        }
+        //for (_agentCount = 0; _agentCount <= 10; _agentCount+=1)
+        //{
+        //    SetupAndRecordAStarExecution();
+        //}
+        SetupAndRecordAStarExecution();
     }
 
     private void SetupAndRecordAStarExecution()
@@ -67,7 +68,7 @@ public class GraphGrid : MonoBehaviour
                 Destroy(agent.gameObject);
             }
         }
-        UnityEngine.Debug.Log(_agentCount + " Agents: " + conflictCount * .01);
+        UnityEngine.Debug.Log(_agentCount + " Agents: " + conflictCount*.01f);
         //UnityEngine.Debug.Log(_agentCount + " Agents: "+ stopwatchTotal * .05);
         stopwatchTotal = 0;
         
