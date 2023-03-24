@@ -251,15 +251,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 662dc81ccc4c72e489db93b50b8f22ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _nodes: []
-  _agentPrefab: {fileID: 0}
-  _nodePrefab: {fileID: 0}
-  _nodeMarker: {fileID: 0}
-  _edgeRenderer: {fileID: 0}
-  _renderedEdgesParent: {fileID: 0}
+  _agentPrefab: {fileID: 763858357717582011, guid: 6f21d86a88407f2499d2974a51b02a65, type: 3}
+  _nodePrefab: {fileID: 4560271229496798657, guid: c47a0a7acc5d63c48933c63e8f305346, type: 3}
   _MAPFAgents: []
   _defaultMaterial: {fileID: 0}
-  _mapName: 
+  _mapName: Assets/BenchmarkMaps/maze-32-32-4.map
 --- !u!1 &296800104
 GameObject:
   m_ObjectHideFlags: 0

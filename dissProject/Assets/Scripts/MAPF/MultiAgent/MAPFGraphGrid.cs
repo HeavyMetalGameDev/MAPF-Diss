@@ -69,17 +69,10 @@ public class MAPFGraphGrid : MonoBehaviour
             foreach (MAPFNode node in nodeList)
             {
                 GameObject createdNode = Instantiate(_nodePrefab, transform);
-
-                //Set node values
-                MAPFNode createdNodeComponent = createdNode.GetComponent<MAPFNode>();
-                createdNodeComponent.position = node.position;
-                createdNodeComponent.nodeType = node.nodeType;
                 createdNode.transform.position = new Vector3(node.position.x, 0, node.position.y);
-                createdNode.name = node.position.ToString();
-
                 if (node.nodeType == NodeTypeEnum.WALKABLE)
                 {
-                    _nodeDict.Add(createdNodeComponent.position, createdNodeComponent);
+                    _nodeDict.Add(node.position, node);
                 }
                 //createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
                 //createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
@@ -93,7 +86,7 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         //SetNodeMaterial(agent.destinationNode, _defaultMaterial);
         MAPFNode randomNode;
-        if (agent.destinationNode)
+        if (agent.destinationNode != null)
         {
             randomNode = agent.destinationNode;
         }
@@ -102,11 +95,12 @@ public class MAPFGraphGrid : MonoBehaviour
             randomNode = null;
         }
 
-        int timeout = 20; //times to attempt random node asignment to avoid deadlock
+        int timeout = 100; //times to attempt random node asignment to avoid deadlock
         while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted || randomNode == agent.currentNode)
         {
             randomNode = _gridGraph[Random.Range(0, (int)_mapDimensions.y)][Random.Range(0,(int) _mapDimensions.x)];
             timeout--;
+            Debug.Log(randomNode);
             if (timeout <= 0) break;
         }
         agent.SetDestination(randomNode);

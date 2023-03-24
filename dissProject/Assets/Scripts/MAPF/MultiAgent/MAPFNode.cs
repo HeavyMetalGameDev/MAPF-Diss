@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class MAPFNode : MonoBehaviour, IComparable<MAPFNode>
+[Serializable]
+public class MAPFNode
 {
     [SerializeField] public Vector2 position;
     [SerializeField] public NodeTypeEnum nodeType;
@@ -32,9 +33,9 @@ public class MAPFNode : MonoBehaviour, IComparable<MAPFNode>
        //     return 0;
       //  }
     }
-    private void Awake()
+    public void SetPos(Vector2 pos)
     {
-        position = new Vector2(transform.position.x, transform.position.z);
+        position = pos;
     }
 
     public override string ToString()
