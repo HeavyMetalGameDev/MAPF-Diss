@@ -18,7 +18,7 @@ public class NewAStar
     {
         Node source = agent.currentNode;
         Node destination = agent.destinationNode;
-        Queue<Node> openList = new Queue<Node>();
+        SimplePriorityQueue<Node> openList = new SimplePriorityQueue<Node>();
         List<Node> closedList = new List<Node>();
 
         openList.Enqueue(source);
