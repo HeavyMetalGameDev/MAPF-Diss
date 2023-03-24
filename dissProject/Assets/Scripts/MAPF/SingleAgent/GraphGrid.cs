@@ -13,7 +13,7 @@ public class GraphGrid : MonoBehaviour
     [SerializeField] GameObject _nodeMarker;
     [SerializeField] GameObject _edgeRenderer;
     [SerializeField] Transform _renderedEdgesParent;
-    [SerializeField] MAPFAgent[] _MAPFAgents;
+    [SerializeField] AStarAgent[] _AStarAgents;
     [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
@@ -24,7 +24,7 @@ public class GraphGrid : MonoBehaviour
     ConflictManager _cf = new ConflictManager();
     MapReader _mapReader = new MapReader();
     [SerializeField] string _mapName;
-    public delegate void AgentArrived(MAPFAgent agent);
+    public delegate void AgentArrived(AStarAgent agent);
     public static AgentArrived agentArrived;
 
     int _maxPathLength = 0;
@@ -63,7 +63,7 @@ public class GraphGrid : MonoBehaviour
             stopwatch.Reset();
             conflictCount+=CheckForNodeConflicts();
             ClearAll();
-            foreach (MAPFAgent agent in _MAPFAgents)
+            foreach (AStarAgent agent in _AStarAgents)
             {
                 Destroy(agent.gameObject);
             }
@@ -202,7 +202,7 @@ public class GraphGrid : MonoBehaviour
 
     private void AStarAlgorithmAllAgents()
     {
-        foreach (MAPFAgent agent in _MAPFAgents)
+        foreach (AStarAgent agent in _AStarAgents)
         {
             aStarManager.AttachGraph(_gridGraph);
             List<Edge<Node>> path = new List<Edge<Node>>();
@@ -236,7 +236,7 @@ public class GraphGrid : MonoBehaviour
         }
 
     }
-    private void AStarAlgorithmOneAgent(MAPFAgent agent)
+    private void AStarAlgorithmOneAgent(AStarAgent agent)
     {
         aStarManager.AttachGraph(_gridGraph);
         UnityEngine.Debug.Log(agent.currentNode);
@@ -245,14 +245,14 @@ public class GraphGrid : MonoBehaviour
         UnityEngine.Debug.Log(path);
     }
 
-    private void NewDestinationAgentAndAStar(MAPFAgent agent) //called when an agent arrives at their destination and therefore A* needs to be ran again.
+    private void NewDestinationAgentAndAStar(AStarAgent agent) //called when an agent arrives at their destination and therefore A* needs to be ran again.
     {
         NewDestinationAgent(agent);
         //AStarAlgorithmAllAgents();
         AStarAlgorithmOneAgent(agent);
     }
 
-    private void NewDestinationAgent(MAPFAgent agent)
+    private void NewDestinationAgent(AStarAgent agent)
     {
         //SetNodeMaterial(agent.destinationNode, _defaultMaterial);
         Node randomNode;
@@ -276,7 +276,7 @@ public class GraphGrid : MonoBehaviour
 
         //SetNodeMaterial(randomNode, agent.GetComponentInChildren<MeshRenderer>().material);
     }
-    private bool SetRandomAgentLocation(MAPFAgent agent)
+    private bool SetRandomAgentLocation(AStarAgent agent)
     {
         Node randomNode = null;
         int timeout = 100; //times to attempt random node asignment to avoid deadlock
@@ -304,7 +304,7 @@ public class GraphGrid : MonoBehaviour
 
     private void RandomDestinationAllAgents()
     {
-        foreach(MAPFAgent agent in _MAPFAgents)
+        foreach(AStarAgent agent in _AStarAgents)
         {
             NewDestinationAgent(agent);
         }
@@ -312,7 +312,7 @@ public class GraphGrid : MonoBehaviour
 
     private void SetupAgents()
     {
-        foreach(MAPFAgent agent in _MAPFAgents)
+        foreach(AStarAgent agent in _AStarAgents)
         {
             Vector2 agentPos = new Vector2(agent.transform.position.x,agent.transform.position.z);
             if (_nodeDict.TryGetValue(agentPos, out Node outNode))
@@ -329,11 +329,11 @@ public class GraphGrid : MonoBehaviour
 
     private void CreateRandomAgents(int agentCount)
     {
-        List<MAPFAgent> agentsList = new List<MAPFAgent>();
+        List<AStarAgent> agentsList = new List<AStarAgent>();
         
         for(int i = 0; i < agentCount; i++)
         {
-            MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
+            AStarAgent agent = Instantiate(_agentPrefab).GetComponent<AStarAgent>();
             if (!SetRandomAgentLocation(agent))
             {
                 UnityEngine.Debug.Log("NO MORE SPACE FOR AGENTS");
@@ -342,14 +342,14 @@ public class GraphGrid : MonoBehaviour
             agentsList.Add(agent);
 
         }
-        _MAPFAgents = agentsList.ToArray();
+        _AStarAgents = agentsList.ToArray();
     }
 
     private int CheckForNodeConflicts()
     {
         int collisionCount = 0;
         _cf.SetTable((int)_mapDimensions.x, (int)_mapDimensions.y, _maxPathLength);
-        foreach(MAPFAgent agent in _MAPFAgents)
+        foreach(AStarAgent agent in _AStarAgents)
         {
             int timestep = 0;
             foreach(Edge<Node> edge in agent.path)

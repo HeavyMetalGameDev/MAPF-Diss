@@ -7,33 +7,33 @@ using QuikGraph;
 public class MAPFAgent : MonoBehaviour
 {
     float timer = 0;
-    [SerializeField]Node _destinationNode;
-    public Node destinationNode { get =>_destinationNode; }
+    [SerializeField]MAPFNode _destinationNode;
+    public MAPFNode destinationNode { get =>_destinationNode; }
 
-    [SerializeField] Node _currentNode;
-    public Node currentNode { get => _currentNode; }
+    [SerializeField] MAPFNode _currentNode;
+    public MAPFNode currentNode { get => _currentNode; }
 
-    [SerializeField] Node _nextNode;
-    public Node nextNode { get => _nextNode; }
+    [SerializeField] MAPFNode _nextNode;
+    public MAPFNode nextNode { get => _nextNode; }
 
-    public List<Edge<Node>> path;
+    public List<MAPFNode> path;
 
     Vector3 _nextVector;
 
-    public void SetPath(List<Edge<Node>> path)
+    public void SetPath(List<MAPFNode> path)
     {
         if (path.Count == 0) return;
         this.path = path;
-        _nextNode = path[0].Target;
+        _nextNode = path[1];
         _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
     }
-    public void SetDestination(Node node)
+    public void SetDestination(MAPFNode node)
     {
         _destinationNode = node;
         node.isTargeted = true;
         
     }
-    public void SetCurrent(Node node)
+    public void SetCurrent(MAPFNode node)
     {
         _currentNode = node;
         Debug.Log("CURRENT NODE SET");
@@ -50,11 +50,11 @@ public class MAPFAgent : MonoBehaviour
             destinationNode.isTargeted = false;
             return;
         }
-        _nextNode = path[0].Target;
+        _nextNode = path[1];
         _nextVector = new Vector3(_nextNode.position.x, 0, _nextNode.position.y);
 
     }
-    private void Update()
+    /*private void Update()
     {
         timer += Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
@@ -65,4 +65,5 @@ public class MAPFAgent : MonoBehaviour
             ArriveAtNode();
         }
     }
+    */
 }

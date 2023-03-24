@@ -14,7 +14,7 @@ public class NewAStar
         graph = Graph;
     }
 
-    /*public Node[] GetSingleAgentPath(MAPFAgent agent)
+    /*public Node[] GetSingleAgentPath(AStarAgent agent)
     {
         Node source = agent.currentNode;
         Node destination = agent.destinationNode;

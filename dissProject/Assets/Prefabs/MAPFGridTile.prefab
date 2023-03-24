@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4560271229496798685}
   - component: {fileID: 4560271229496798684}
   - component: {fileID: 4560271229496798687}
-  - component: {fileID: 3034076168221231419}
+  - component: {fileID: 475891261229862856}
   m_Layer: 0
-  m_Name: GridTile
+  m_Name: MAPFGridTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4560271229496798684
 MeshFilter:
@@ -84,7 +84,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3034076168221231419
+--- !u!114 &475891261229862856
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,11 +93,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 4560271229496798657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ba5a7fee54b4124d849cf5938124992, type: 3}
+  m_Script: {fileID: 11500000, guid: 39f7892d870000c48818d438ee89f007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   position: {x: 0, y: 0}
   nodeType: 0
-  _nodeMarker: {fileID: 455896012210672493, guid: 0ac9cee2d6d8a344483c65945033c235, type: 3}
+  _nodeMarker: {fileID: 0}
   isTargeted: 0
   isOccupied: 0
+  cost: 0

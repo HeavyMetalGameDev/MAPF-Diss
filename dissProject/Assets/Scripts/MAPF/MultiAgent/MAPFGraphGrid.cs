@@ -6,23 +6,18 @@ using System.Linq;
 
 public class MAPFGraphGrid : MonoBehaviour
 {
-    [SerializeField] Node[] _nodes;
+    //[SerializeField] List<MAPFNode> _nodes;
     [SerializeField] GameObject _agentPrefab;
     [SerializeField] GameObject _nodePrefab;
-    [SerializeField] GameObject _nodeMarker;
-    [SerializeField] GameObject _edgeRenderer;
-    [SerializeField] Transform _renderedEdgesParent;
     [SerializeField] MAPFAgent[] _MAPFAgents;
     [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
-    Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
-    Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0) };
-    AStarManager aStarManager = new AStarManager();
-    BidirectionalGraph<Node, Edge<Node>> _gridGraph = new BidirectionalGraph<Node, Edge<Node>>(true);
-    ConflictManager _cf = new ConflictManager();
-    MapReader _mapReader = new MapReader();
+    Dictionary<Vector2, MAPFNode> _nodeDict = new Dictionary<Vector2, MAPFNode>();
+    List<List<MAPFNode>> _gridGraph = new List<List<MAPFNode>>();
+    MAPFMapReader _mapReader = new MAPFMapReader();
     [SerializeField] string _mapName;
+
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
 
@@ -34,31 +29,12 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
-        AddEdgesToGraph();
         CreateRandomAgents(2);
         //SetupAgents();
         RandomDestinationAllAgents();
         //CreateAllRenderEdges();
-        Debug.Log(_gridGraph.EdgeCount);
-        AStarAlgorithmAllAgents();
     }
-
-    private void OnEnable()
-    {
-        refreshGrid += OnGridRefresh;
-        agentArrived += NewDestinationAgentAndAStar;
-    }
-    private void OnDisable()
-    {
-        refreshGrid -= OnGridRefresh;
-        agentArrived -= NewDestinationAgentAndAStar;
-    }
-    private void GetNodesInChildren()
-    {
-        _nodes = GetComponentsInChildren<Node>();
-    }
-
-    private void OnGridRefresh(Node node)
+    private void OnGridRefresh(MAPFNode node)
     {
         if (node.nodeType.Equals(NodeTypeEnum.NOT_WALKABLE))
         {
@@ -66,40 +42,15 @@ public class MAPFGraphGrid : MonoBehaviour
         }
         else if (node.nodeType.Equals(NodeTypeEnum.WALKABLE))
         {
-            _gridGraph.AddVertex(node);
+            //TODO
             _nodeDict[node.position] = node;
             node._nodeMarker.ToggleMarker(true);
-            foreach (Vector2 dir in _dirs)
-            {
-                if (_nodeDict.TryGetValue(node.position + dir, out Node value))
-                {
-                    if (value.nodeType.Equals(NodeTypeEnum.WALKABLE))
-                    {
-                        _gridGraph.AddEdge(new Edge<Node>(node, value));
-                    }
-                }
-                if (_nodeDict.TryGetValue(node.position - dir, out Node value2))
-                {
-                    if (value2.nodeType.Equals(NodeTypeEnum.WALKABLE))
-                    {
-                        _gridGraph.AddEdge(new Edge<Node>(value2, node));
-                    }
-                }
-
-            }
         }
-        foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
-        {
-            Destroy(child.gameObject);
-        }
-        //CreateAllRenderEdges();
-        AStarAlgorithmAllAgents();
     }
 
-    private void RemoveNodeAndEdges(Node node)
+    private void RemoveNodeAndEdges(MAPFNode node)
     {
-        _gridGraph.ClearEdges(node);
-        _gridGraph.RemoveVertex(node);
+        ///TODO
         _nodeDict[node.position] = node;
         node._nodeMarker.ToggleMarker(false);
     }
@@ -107,117 +58,41 @@ public class MAPFGraphGrid : MonoBehaviour
     private void GetDataFromMapReader()
     {
         _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
-        _nodes = _mapReader.GetNodesFromMap();
+        _gridGraph = _mapReader.GetNodesFromMap();
     }
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
     {
-        int counter = 0;
-        foreach (Node node in _nodes)
+        //TODO
+        foreach (List<MAPFNode> nodeList in _gridGraph)
         {
-            bool isWalkable = false; //used to toggle marker colour later in function
-            GameObject createdNode = Instantiate(_nodePrefab, transform);
-
-            //Set node values
-            Node createdNodeComponent = createdNode.GetComponent<Node>();
-            createdNodeComponent.position = node.position;
-            createdNodeComponent.nodeType = node.nodeType;
-            createdNode.transform.position = new Vector3(node.position.x, 0, node.position.y);
-            createdNode.name = node.position.ToString();
-
-            if (node.nodeType == NodeTypeEnum.WALKABLE)
+            int counter = 0;
+            foreach (MAPFNode node in nodeList)
             {
-                isWalkable = true;
-                _gridGraph.AddVertex(createdNodeComponent);
+                GameObject createdNode = Instantiate(_nodePrefab, transform);
 
-                _nodeDict.Add(createdNodeComponent.position, createdNodeComponent);
-            }
-            //createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
-            //createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
-            _nodes[counter] = createdNodeComponent;
-            counter += 1;
-        }
-    }
-    private void CreateAllRenderEdges()
-    {
-        foreach (Edge<Node> edge in _gridGraph.Edges)
-        {
-            LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
-            lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
-        }
-    }
+                //Set node values
+                MAPFNode createdNodeComponent = createdNode.GetComponent<MAPFNode>();
+                createdNodeComponent.position = node.position;
+                createdNodeComponent.nodeType = node.nodeType;
+                createdNode.transform.position = new Vector3(node.position.x, 0, node.position.y);
+                createdNode.name = node.position.ToString();
 
-    private void AddEdgesToGraph()
-    {
-        foreach (Node node in _gridGraph.Vertices)
-        {
-            foreach (Vector2 dir in _dirs)
-            {
-                if (_nodeDict.TryGetValue(node.position + dir, out Node value) && value.nodeType.Equals(NodeTypeEnum.WALKABLE))
+                if (node.nodeType == NodeTypeEnum.WALKABLE)
                 {
-                    _gridGraph.AddEdge(new Edge<Node>(node, value));
+                    _nodeDict.Add(createdNodeComponent.position, createdNodeComponent);
                 }
+                //createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
+                //createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
+                //nodeList[counter] = createdNodeComponent;
+                counter += 1;
             }
+
         }
     }
-
-    private void AStarAlgorithmAllAgents()
-    {
-        foreach (MAPFAgent agent in _MAPFAgents)
-        {
-            aStarManager.AttachGraph(_gridGraph);
-            Debug.Log(agent.currentNode);
-            List<Edge<Node>> path = new List<Edge<Node>>();
-            try
-            {
-                Debug.Log(agent.currentNode + " " + agent.destinationNode);
-                path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
-            }
-            catch
-            {
-                Debug.Log("NO PATH FOUND");
-            }
-            agent.SetPath(path);
-            if (path.Count > _maxPathLength) _maxPathLength = path.Count;
-            Debug.Log(path);
-
-            /*foreach (LineRenderer child in _renderedEdgesParent.GetComponentsInChildren<LineRenderer>())
-            {
-                Destroy(child.gameObject);
-            }
-            foreach (Edge<Node> edge in _gridGraph.Edges)
-            {
-                LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
-                lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
-                if (path.Contains(edge))
-                {
-                    lineRenderer.startColor = Color.green;
-                    lineRenderer.endColor = Color.green;
-                }
-            }
-            */
-        }
-
-    }
-    private void AStarAlgorithmOneAgent(MAPFAgent agent)
-    {
-        aStarManager.AttachGraph(_gridGraph);
-        Debug.Log(agent.currentNode);
-        List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
-        agent.SetPath(path);
-        Debug.Log(path);
-    }
-
-    private void NewDestinationAgentAndAStar(MAPFAgent agent) //called when an agent arrives at their destination and therefore A* needs to be ran again.
-    {
-        NewDestinationAgent(agent);
-        //AStarAlgorithmAllAgents();
-        AStarAlgorithmOneAgent(agent);
-    }
-
     private void NewDestinationAgent(MAPFAgent agent)
     {
         //SetNodeMaterial(agent.destinationNode, _defaultMaterial);
-        Node randomNode;
+        MAPFNode randomNode;
         if (agent.destinationNode)
         {
             randomNode = agent.destinationNode;
@@ -230,7 +105,7 @@ public class MAPFGraphGrid : MonoBehaviour
         int timeout = 20; //times to attempt random node asignment to avoid deadlock
         while (randomNode == agent.destinationNode || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isTargeted || randomNode == agent.currentNode)
         {
-            randomNode = _nodes[Random.Range(0, _nodes.Length)];
+            randomNode = _gridGraph[Random.Range(0, (int)_mapDimensions.y)][Random.Range(0,(int) _mapDimensions.x)];
             timeout--;
             if (timeout <= 0) break;
         }
@@ -240,13 +115,16 @@ public class MAPFGraphGrid : MonoBehaviour
     }
     private bool SetRandomAgentLocation(MAPFAgent agent)
     {
-        Node randomNode = null;
+        MAPFNode randomNode = null;
         int timeout = 100; //times to attempt random node asignment to avoid deadlock
         while (randomNode == null || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isOccupied)
         {
-            randomNode = _nodes[Random.Range(0, _nodes.Length)];
+            randomNode = _gridGraph[Random.Range(0, (int)_mapDimensions.y)][Random.Range(0, (int)_mapDimensions.x)];
             timeout--;
-            Debug.Log(timeout);
+            if (randomNode.nodeType == NodeTypeEnum.WALKABLE && !randomNode.isOccupied)
+            {
+                break;
+            }
             if (timeout <= 0)
             {
                 Destroy(agent.gameObject);
@@ -260,33 +138,11 @@ public class MAPFGraphGrid : MonoBehaviour
         return true;
     }
 
-    private void SetNodeMaterial(Node node, Material material)
-    {
-        node.GetComponent<MeshRenderer>().material = material;
-    }
-
     private void RandomDestinationAllAgents()
     {
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             NewDestinationAgent(agent);
-        }
-    }
-
-    private void SetupAgents()
-    {
-        foreach (MAPFAgent agent in _MAPFAgents)
-        {
-            Vector2 agentPos = new Vector2(agent.transform.position.x, agent.transform.position.z);
-            if (_nodeDict.TryGetValue(agentPos, out Node outNode))
-            {
-                agent.SetCurrent(outNode);
-            }
-            else
-            {
-                Debug.LogError("AGENT SETUP FAILED: AGENT NOT ON GRID POSITION");
-            }
-
         }
     }
 
