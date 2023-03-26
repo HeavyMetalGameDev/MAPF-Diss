@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using QuikGraph;
 using System.Linq;
+using System.Diagnostics;
 
 public class MAPFGraphGrid : MonoBehaviour
 {
@@ -32,7 +33,7 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
-        CreateRandomAgents(50);
+        CreateRandomAgents(20);
         //SetupAgents();
         RandomDestinationAllAgents();
         STAStarAllAgents();
@@ -132,7 +133,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 return false;
             }
         }
-        Debug.Log("VALID LOCATION FOUND");
+        UnityEngine.Debug.Log("VALID LOCATION FOUND");
         agent.SetCurrent(randomNode);
         randomNode.isOccupied = true;
         agent.transform.position = new Vector3(randomNode.position.x, 0, randomNode.position.y);
@@ -156,7 +157,7 @@ public class MAPFGraphGrid : MonoBehaviour
             MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
             if (!SetRandomAgentLocation(agent))
             {
-                Debug.Log("NO MORE SPACE FOR AGENTS");
+                UnityEngine.Debug.Log("NO MORE SPACE FOR AGENTS");
                 break;
             }
             agentsList.Add(agent);
@@ -169,9 +170,14 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         foreach(MAPFAgent agent in _MAPFAgents)
         {
+            
             _gridGraphCopy = _gridGraph;
+            
             _stAStar = new STAStar(_gridGraphCopy,_mapDimensions);
             agent.SetPath(_stAStar.GetSingleAgentPath(agent));
         }
+        
+        
     }
+    
 }

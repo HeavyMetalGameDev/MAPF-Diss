@@ -4,6 +4,7 @@ using UnityEngine;
 using QuikGraph;
 using System.Linq;
 using Priority_Queue;
+using System.Diagnostics;
 
 public class STAStar
 {
@@ -28,6 +29,7 @@ public class STAStar
 
     public List<MAPFNode> GetSingleAgentPath(MAPFAgent agent)
     {
+        Stopwatch sw = new Stopwatch();
         MAPFNode source = agent.currentNode;
         MAPFNode destination = agent.destinationNode;
         List<MAPFNode> path = new List<MAPFNode>();
@@ -35,19 +37,25 @@ public class STAStar
         List<MAPFNode> closedList = new List<MAPFNode>();
         MAPFNode workingNode = new MAPFNode();
         openList.Enqueue(source,source.f);
-
+        sw.Start();
         while (openList.Count!= 0)
         {
+            UnityEngine.Debug.Log("NEW NODE");
             workingNode = openList.Dequeue();
             if (workingNode.IsEqualTo(destination))
             {
                 break;
             }
             closedList.Add(workingNode);
-
-            foreach(MAPFNode adjNode in GetAdjacentNodes(workingNode))
+            
+            foreach (MAPFNode adjNode in GetAdjacentNodes(workingNode))
             {
-                if (closedList.Contains(adjNode)) continue;
+                if (closedList.Contains(adjNode))
+                {
+                    
+                    continue;
+                }
+                
                 if (!openList.Contains(adjNode))
                 {
                     adjNode.g = workingNode.g + 5;
@@ -65,17 +73,22 @@ public class STAStar
                         adjNode.parent = workingNode;
                     }
                 }
+
             }
+            
         }
-        int testIter = 100;
+        sw.Stop();
+        UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
+        sw.Reset();
+
         while (workingNode.parent != null)
         {
             //Debug.Log(workingNode + " - " + workingNode.parent);
             path.Add(workingNode);
             workingNode = workingNode.parent;
-            if(testIter--<0)break;
         }
         path.Reverse();
+
         return path;
     }
     
@@ -90,7 +103,7 @@ public class STAStar
         List<MAPFNode> adjacentNodes = new List<MAPFNode>();
         int nodeX = (int)(node.position.x*.2f);
         int nodeY = (int)(node.position.y * .2f);
-        adjacentNodes.Add(node); //Add back when performing STA* as this introduces a wait action.
+        //adjacentNodes.Add(node); //Add back when performing STA* as this introduces a wait action.
         MAPFNode potentialNode;
 
         if(nodeX + 1 < dimensions.x)
