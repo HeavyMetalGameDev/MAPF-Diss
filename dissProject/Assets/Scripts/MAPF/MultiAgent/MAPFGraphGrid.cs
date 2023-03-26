@@ -36,6 +36,7 @@ public class MAPFGraphGrid : MonoBehaviour
         CreateRandomAgents(2);
         //SetupAgents();
         RandomDestinationAllAgents();
+        STAStarAllAgents();
         //CreateAllRenderEdges();
     }
     private void OnGridRefresh(MAPFNode node)
@@ -164,5 +165,13 @@ public class MAPFGraphGrid : MonoBehaviour
 
         }
         _MAPFAgents = agentsList.ToArray();
+    }
+
+    private void STAStarAllAgents()
+    {
+        foreach(MAPFAgent agent in _MAPFAgents)
+        {
+            agent.SetPath(_stAStar.GetSingleAgentPath(agent));
+        }
     }
 }

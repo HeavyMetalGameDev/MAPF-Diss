@@ -22,20 +22,16 @@ public class MAPFNode
         this.position = position;
         this.nodeType = nodeType;
     }
-    public int CompareTo(MAPFNode compareNode)
+    public MAPFNode()
     {
-       // if(position.x > compareNode.position.x || position.y > compareNode.position.y)
-       // {
-            return -1;
-       // }
-       // else if (position.x < compareNode.position.x || position.y < compareNode.position.y)
-       // {
-      //      return -1;
-      //  }
-      //  else
-      //  {
-       //     return 0;
-      //  }
+    }
+    public bool IsEqualTo(MAPFNode compareNode)
+    {
+        if (position.Equals(compareNode.position))
+        {
+            return true;
+        }
+        return false;
     }
     public void SetPos(Vector2 pos)
     {

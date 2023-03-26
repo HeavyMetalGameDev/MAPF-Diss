@@ -45,9 +45,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c0c477ba0a10046ab978ba79f87001, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _destinationNode: {fileID: 0}
-  _currentNode: {fileID: 0}
-  _nextNode: {fileID: 0}
+  _pathmarkerPrefab: {fileID: 3066743114196506717, guid: 0ac9cee2d6d8a344483c65945033c235, type: 3}
+  destinationNode:
+    position: {x: 0, y: 0}
+    nodeType: 0
+    _nodeMarker: {fileID: 0}
+    isTargeted: 0
+    isOccupied: 0
+    time: 0
+    g: 0
+    h: 0
+    f: 0
+  currentNode:
+    position: {x: 0, y: 0}
+    nodeType: 0
+    _nodeMarker: {fileID: 0}
+    isTargeted: 0
+    isOccupied: 0
+    time: 0
+    g: 0
+    h: 0
+    f: 0
+  nextNode:
+    position: {x: 0, y: 0}
+    nodeType: 0
+    _nodeMarker: {fileID: 0}
+    isTargeted: 0
+    isOccupied: 0
+    time: 0
+    g: 0
+    h: 0
+    f: 0
   path: []
 --- !u!1 &8361991645470527948
 GameObject:

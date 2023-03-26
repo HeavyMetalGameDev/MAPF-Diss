@@ -5,6 +5,7 @@ using UnityEngine;
 public class MAPFAgent : MonoBehaviour
 {
     float timer = 0;
+    [SerializeField] GameObject _pathmarkerPrefab;
     public MAPFNode destinationNode;
     public MAPFNode currentNode;
     public MAPFNode nextNode;
@@ -18,6 +19,10 @@ public class MAPFAgent : MonoBehaviour
         this.path = path;
         nextNode = path[1];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
+        foreach(MAPFNode node in path)
+        {
+            Instantiate(_pathmarkerPrefab, new Vector3(node.position.x, 0, node.position.y), Quaternion.identity);
+        }
     }
     public void SetDestination(MAPFNode node)
     {
@@ -42,7 +47,7 @@ public class MAPFAgent : MonoBehaviour
             destinationNode.isTargeted = false;
             return;
         }
-        nextNode = path[1];
+        nextNode = path[0];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
 
     }
