@@ -33,7 +33,7 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
-        CreateRandomAgents(30);
+        CreateRandomAgents(4);
         //SetupAgents();
         RandomDestinationAllAgents();
         STAStarAllAgents();

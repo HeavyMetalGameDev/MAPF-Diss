@@ -44,8 +44,9 @@ public class MAPFAgent : MonoBehaviour
         path.RemoveAt(0);  //remove the node agent just arrived at from path
         if (path.Count == 0) //if path is now empty
         {
-            //GraphGrid.agentArrived(this); //agent arrived at destination
+
             destinationNode.isTargeted = false;
+            Destroy(gameObject);
             return;
         }
         nextNode = path[0];
@@ -55,11 +56,11 @@ public class MAPFAgent : MonoBehaviour
     private void Update()
     {
         timer += Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
-        if (timer>=.5f)
+        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 2.5f*Time.deltaTime);
+        if (timer>=2f)
         {
             //transform.position = _nextVector;
-            timer -= .5f;
+            timer -= 2f;
             ArriveAtNode();
         }
     }

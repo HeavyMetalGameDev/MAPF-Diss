@@ -129,7 +129,25 @@ public class STAStar
             workingNode = openList.Dequeue();
             if (workingNode.IsEqualTo(destination))
             {
-                break;
+                sw.Stop();
+                UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
+                sw.Reset();
+                MAPFNode prevNode;
+                while (workingNode.parent != null)
+                {
+                    //Debug.Log(workingNode + " - " + workingNode.parent);
+                    path.Add(workingNode);
+                    rTable.Add(workingNode.position + "" + workingNode.time, agent);
+
+                    prevNode = workingNode;
+                    workingNode = workingNode.parent;
+                    edgeTable.Add(workingNode.position + "" + prevNode.position + "" + workingNode.time, agent);
+
+                }
+
+                path.Reverse();
+
+                return path;
             }
             closedList.Add(workingNode);
 
@@ -146,6 +164,11 @@ public class STAStar
                     continue;
                 }
                 if (edgeTable.ContainsKey(workingNode.position +""+ adjNode.position + "" + (workingNode.time))) //if this time position is reserved, dont consider it
+                {
+
+                    continue;
+                }
+                if (edgeTable.ContainsKey(adjNode.position + "" + workingNode.position + "" + (workingNode.time))) //if this time position is reserved, dont consider it
                 {
 
                     continue;
@@ -174,26 +197,10 @@ public class STAStar
             }
 
         }
-        sw.Stop();
-        UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
-        sw.Reset();
-        MAPFNode prevNode;
-        while (workingNode.parent != null)
-        {
-            //Debug.Log(workingNode + " - " + workingNode.parent);
-            path.Add(workingNode);
-            rTable.Add(workingNode.position +"" + workingNode.time, agent);
-
-            prevNode = workingNode;
-            workingNode = workingNode.parent;
-            edgeTable.Add(workingNode.position +""+ prevNode.position + "" + workingNode.time,agent);
-            edgeTable.Add(prevNode.position + "" + workingNode.position + "" + workingNode.time, agent);
-
-        }
-        
-        path.Reverse();
-
+        UnityEngine.Debug.Log("NO PATH FOUND");
+        path.Add(source);
         return path;
+
     }
     public int CalculateManhattan(MAPFNode start, MAPFNode end)
     {
