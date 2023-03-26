@@ -18,6 +18,8 @@ public class MAPFGraphGrid : MonoBehaviour
     MAPFMapReader _mapReader = new MAPFMapReader();
     [SerializeField] string _mapName;
 
+    STAStar _stAStar;
+
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
 
@@ -29,6 +31,8 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
+        CreateSTAStar();
+        _stAStar.GetAdjacentNodes(_gridGraph[8][7]);
         CreateRandomAgents(2);
         //SetupAgents();
         RandomDestinationAllAgents();
@@ -68,10 +72,10 @@ public class MAPFGraphGrid : MonoBehaviour
             int counter = 0;
             foreach (MAPFNode node in nodeList)
             {
-                GameObject createdNode = Instantiate(_nodePrefab, transform);
-                createdNode.transform.position = new Vector3(node.position.x, 0, node.position.y);
                 if (node.nodeType == NodeTypeEnum.WALKABLE)
                 {
+                    GameObject createdNode = Instantiate(_nodePrefab, transform);
+                    createdNode.transform.position = new Vector3(node.position.x, 0, node.position.y);
                     _nodeDict.Add(node.position, node);
                 }
                 //createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
@@ -81,6 +85,10 @@ public class MAPFGraphGrid : MonoBehaviour
             }
 
         }
+    }
+    private void CreateSTAStar()
+    {
+        _stAStar = new STAStar(_gridGraph, _mapDimensions);
     }
     private void NewDestinationAgent(MAPFAgent agent)
     {

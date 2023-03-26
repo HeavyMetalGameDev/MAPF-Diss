@@ -11,7 +11,11 @@ public class MAPFNode
     public GridMarker _nodeMarker;
     public bool isTargeted;
     public bool isOccupied;
-    public float cost = 1;
+    public MAPFNode parent;
+    public int time;
+    public int g;
+    public int h;
+    public int f;
 
     public MAPFNode(Vector2 position, NodeTypeEnum nodeType)
     {
@@ -41,5 +45,10 @@ public class MAPFNode
     public override string ToString()
     {
         return "Node: "+position + " isOccupied: " + isOccupied + " NodeType: " + nodeType;
+    }
+    public int GetFCost()
+    {
+        f = g + h;
+        return f;
     }
 }
