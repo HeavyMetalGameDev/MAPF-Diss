@@ -33,7 +33,7 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
-        CreateRandomAgents(20);
+        CreateRandomAgents(30);
         //SetupAgents();
         RandomDestinationAllAgents();
         STAStarAllAgents();
@@ -168,13 +168,14 @@ public class MAPFGraphGrid : MonoBehaviour
 
     private void STAStarAllAgents()
     {
+        _stAStar = new STAStar();
         foreach(MAPFAgent agent in _MAPFAgents)
         {
             
             _gridGraphCopy = _gridGraph;
-            
-            _stAStar = new STAStar(_gridGraphCopy,_mapDimensions);
-            agent.SetPath(_stAStar.GetSingleAgentPath(agent));
+
+            _stAStar.SetSTAStar(_gridGraphCopy, _mapDimensions);
+            agent.SetPath(_stAStar.GetHCAStarPath(agent));
         }
         
         
