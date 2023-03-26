@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class MAPFNode
+public class MAPFNode : IEquatable<MAPFNode>
 {
     [SerializeField] public Vector2 position;
     [SerializeField] public NodeTypeEnum nodeType;
@@ -46,5 +46,14 @@ public class MAPFNode
     {
         f = g + h;
         return f;
+    }
+
+    public bool Equals(MAPFNode node)
+    {
+        if (node.position.Equals(position))
+        {
+            return true;
+        }
+        return false;
     }
 }

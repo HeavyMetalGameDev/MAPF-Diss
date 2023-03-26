@@ -15,6 +15,7 @@ public class MAPFGraphGrid : MonoBehaviour
     public static RefreshGrid refreshGrid;
     Dictionary<Vector2, MAPFNode> _nodeDict = new Dictionary<Vector2, MAPFNode>();
     List<List<MAPFNode>> _gridGraph = new List<List<MAPFNode>>();
+    List<List<MAPFNode>> _gridGraphCopy;
     MAPFMapReader _mapReader = new MAPFMapReader();
     [SerializeField] string _mapName;
 
@@ -31,9 +32,7 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
-        CreateSTAStar();
-        _stAStar.GetAdjacentNodes(_gridGraph[8][7]);
-        CreateRandomAgents(2);
+        CreateRandomAgents(50);
         //SetupAgents();
         RandomDestinationAllAgents();
         STAStarAllAgents();
@@ -109,7 +108,6 @@ public class MAPFGraphGrid : MonoBehaviour
         {
             randomNode = _gridGraph[Random.Range(0, (int)_mapDimensions.y)][Random.Range(0,(int) _mapDimensions.x)];
             timeout--;
-            Debug.Log(randomNode);
             if (timeout <= 0) break;
         }
         agent.SetDestination(randomNode);
@@ -171,6 +169,8 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         foreach(MAPFAgent agent in _MAPFAgents)
         {
+            _gridGraphCopy = _gridGraph;
+            _stAStar = new STAStar(_gridGraphCopy,_mapDimensions);
             agent.SetPath(_stAStar.GetSingleAgentPath(agent));
         }
     }

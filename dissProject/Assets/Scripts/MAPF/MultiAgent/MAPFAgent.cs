@@ -17,12 +17,13 @@ public class MAPFAgent : MonoBehaviour
     {
         if (path.Count == 0) return;
         this.path = path;
-        nextNode = path[1];
+        nextNode = path[0];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
-        foreach(MAPFNode node in path)
+        /*foreach(MAPFNode node in path)
         {
             Instantiate(_pathmarkerPrefab, new Vector3(node.position.x, 0, node.position.y), Quaternion.identity);
         }
+        */
     }
     public void SetDestination(MAPFNode node)
     {
