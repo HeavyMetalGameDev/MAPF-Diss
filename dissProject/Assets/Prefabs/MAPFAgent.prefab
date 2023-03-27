@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pathmarkerPrefab: {fileID: 3066743114196506717, guid: 0ac9cee2d6d8a344483c65945033c235, type: 3}
+  _completemarkerPrefab: {fileID: 3066743114196506717, guid: c0a3185d3b9eabf4891d7472484114fc, type: 3}
   destinationNode:
     position: {x: 0, y: 0}
     nodeType: 0
@@ -77,6 +78,7 @@ MonoBehaviour:
     h: 0
     f: 0
   path: []
+  timesteps: 0
 --- !u!1 &8361991645470527948
 GameObject:
   m_ObjectHideFlags: 0

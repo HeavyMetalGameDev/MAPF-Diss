@@ -10,8 +10,9 @@ public class STAStar
 {
     public List<List<MAPFNode>> _graph = new List<List<MAPFNode>>();
     Vector2 dimensions;
-    Hashtable rTable = new Hashtable();
-    Hashtable edgeTable = new Hashtable();
+    Hashtable rTable = new Hashtable(); //reservation table for node positions
+    Hashtable edgeTable = new Hashtable(); //reservation table for adge traversal
+    public int startingTimestep=0;
     public STAStar(List<List<MAPFNode>> Graph, Vector2 Dimensions)
     {
         int yCount = 0;
@@ -35,6 +36,7 @@ public class STAStar
     public void SetSTAStar(List<List<MAPFNode>> Graph, Vector2 Dimensions)
     {
         int yCount = 0;
+        _graph = new List<List<MAPFNode>>();
         foreach (List<MAPFNode> yNodes in Graph)
         {
             int xCount = 0;
@@ -113,11 +115,12 @@ public class STAStar
         return path;
     }
 
-    public List<MAPFNode> GetHCAStarPath(MAPFAgent agent)
+    public List<MAPFNode> GetSTAStarPath(MAPFAgent agent)
     {
         Stopwatch sw = new Stopwatch();
-        MAPFNode source = agent.currentNode;
-        MAPFNode destination = agent.destinationNode;
+        MAPFNode source = _graph[(int)(agent.currentNode.position.y*.2f)][(int)(agent.currentNode.position.x * .2f)];
+        source.time = startingTimestep;
+        MAPFNode destination = _graph[(int)(agent.destinationNode.position.y * .2f)][(int)(agent.destinationNode.position.x * .2f)];
         List<MAPFNode> path = new List<MAPFNode>();
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
         List<MAPFNode> closedList = new List<MAPFNode>();
@@ -135,14 +138,16 @@ public class STAStar
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
                 {
+
                     //Debug.Log(workingNode + " - " + workingNode.parent);
                     path.Add(workingNode);
+                    UnityEngine.Debug.Log(workingNode.position + "" + workingNode.time, agent);
                     rTable.Add(workingNode.position + "" + workingNode.time, agent);
+                    
 
                     prevNode = workingNode;
                     workingNode = workingNode.parent;
                     edgeTable.Add(workingNode.position + "" + prevNode.position + "" + workingNode.time, agent);
-
                 }
 
                 path.Reverse();
@@ -158,17 +163,17 @@ public class STAStar
 
                     continue;
                 }
-                if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time + 1))) //if this time position is reserved, dont consider it
+                if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
                 {
                     
                     continue;
                 }
-                if (edgeTable.ContainsKey(workingNode.position +""+ adjNode.position + "" + (workingNode.time))) //if this time position is reserved, dont consider it
+                if (edgeTable.ContainsKey(workingNode.position +""+ adjNode.position + "" + (workingNode.time))) //if this edge is reserved, dont consider it
                 {
 
                     continue;
                 }
-                if (edgeTable.ContainsKey(adjNode.position + "" + workingNode.position + "" + (workingNode.time))) //if this time position is reserved, dont consider it
+                if (edgeTable.ContainsKey(adjNode.position + "" + workingNode.position + "" + (workingNode.time))) //if this edge in the opposite direction is reserved, dont consider it
                 {
 
                     continue;

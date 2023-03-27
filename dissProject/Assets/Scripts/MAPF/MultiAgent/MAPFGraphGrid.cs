@@ -20,6 +20,8 @@ public class MAPFGraphGrid : MonoBehaviour
     MAPFMapReader _mapReader = new MAPFMapReader();
     [SerializeField] string _mapName;
 
+    [SerializeField] int _agentCount;
+
     STAStar _stAStar;
 
     public delegate void AgentArrived(MAPFAgent agent);
@@ -28,12 +30,20 @@ public class MAPFGraphGrid : MonoBehaviour
     int _maxPathLength = 0;
     Vector2 _mapDimensions;
 
+    private void OnEnable()
+    {
+        agentArrived += OnAgentArrived;
+    }
+    private void OnDisable()
+    {
+        agentArrived -= OnAgentArrived;
+    }
     private void Start()
     {
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
-        CreateRandomAgents(4);
+        CreateRandomAgents(_agentCount);
         //SetupAgents();
         RandomDestinationAllAgents();
         STAStarAllAgents();
@@ -175,10 +185,21 @@ public class MAPFGraphGrid : MonoBehaviour
             _gridGraphCopy = _gridGraph;
 
             _stAStar.SetSTAStar(_gridGraphCopy, _mapDimensions);
-            agent.SetPath(_stAStar.GetHCAStarPath(agent));
+            agent.SetPath(_stAStar.GetSTAStarPath(agent));
         }
         
         
+    }
+
+    private void OnAgentArrived(MAPFAgent agent)
+    {
+
+        NewDestinationAgent(agent);
+        _gridGraphCopy = _gridGraph;
+
+        _stAStar.SetSTAStar(_gridGraphCopy, _mapDimensions);
+        _stAStar.startingTimestep = agent.timesteps;
+        agent.SetPath(_stAStar.GetSTAStarPath(agent));
     }
     
 }
