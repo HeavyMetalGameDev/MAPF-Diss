@@ -132,8 +132,9 @@ public class STAStar
             workingNode = openList.Dequeue();
             if (workingNode.IsEqualTo(destination))
             {
+                UnityEngine.Debug.Log("Agent Planned");
                 sw.Stop();
-                UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
+                //UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
                 sw.Reset();
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
@@ -141,7 +142,6 @@ public class STAStar
 
                     //Debug.Log(workingNode + " - " + workingNode.parent);
                     path.Add(workingNode);
-                    UnityEngine.Debug.Log(workingNode.position + "" + workingNode.time, agent);
                     rTable.Add(workingNode.position + "" + workingNode.time, agent);
                     
 
@@ -178,8 +178,7 @@ public class STAStar
 
                     continue;
                 }
-
-                if (!openList.Contains(adjNode))
+                if (!openList.Contains(adjNode) || adjNode.Equals(workingNode))
                 {
                     adjNode.g = workingNode.g + 5;
                     adjNode.time = workingNode.time + 1;
@@ -218,7 +217,7 @@ public class STAStar
         int nodeX = (int)(node.position.x*.2f);
         int nodeY = (int)(node.position.y * .2f);
         adjacentNodes.Add(node); //Add back when performing STA* as this introduces a wait action.
-        MAPFNode potentialNode;
+        MAPFNode potentialNode; 
 
         if(nodeX + 1 < dimensions.x)
         {

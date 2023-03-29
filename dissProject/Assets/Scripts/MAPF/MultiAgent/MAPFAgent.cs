@@ -58,11 +58,11 @@ public class MAPFAgent : MonoBehaviour
     private void Update()
     {
         timer += Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 2.5f*Time.deltaTime);
-        if (timer>=2f)
+        transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
+        if (timer>=.5f)
         {
             //transform.position = _nextVector;
-            timer -= 2f;
+            timer -= .5f;
             ArriveAtNode();
         }
     }

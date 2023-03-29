@@ -22,6 +22,15 @@ public class MAPFNode : IEquatable<MAPFNode>
         this.position = position;
         this.nodeType = nodeType;
     }
+    public MAPFNode(Vector2 position, NodeTypeEnum nodeType, int time, int g, int h, int f)
+    {
+        this.position = position;
+        this.nodeType = nodeType;
+        this.time = time;
+        this.g = g;
+        this.h = h;
+        this.f = f;
+    }
     public MAPFNode()
     {
     }
