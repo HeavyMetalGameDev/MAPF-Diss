@@ -11,7 +11,7 @@ public class STAStar
     public List<List<MAPFNode>> _graph = new List<List<MAPFNode>>();
     Vector2 dimensions;
     Hashtable rTable = new Hashtable(); //reservation table for node positions
-    Hashtable edgeTable = new Hashtable(); //reservation table for adge traversal
+    Hashtable edgeTable = new Hashtable(); //reservation table for edge traversal
     public int startingTimestep=0;
     public STAStar(List<List<MAPFNode>> Graph, Vector2 Dimensions)
     {
