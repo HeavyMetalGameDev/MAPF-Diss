@@ -202,7 +202,7 @@ public class STAStar
 
         }
         UnityEngine.Debug.Log("NO PATH FOUND");
-        path.Add(source);
+        path = null;
         return path;
 
     }

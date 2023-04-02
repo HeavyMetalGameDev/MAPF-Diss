@@ -23,6 +23,7 @@ public class MAPFGraphGrid : MonoBehaviour
     [SerializeField] int _agentCount;
 
     STAStar _stAStar;
+    CBSManager _cbsManager;
 
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
@@ -46,7 +47,8 @@ public class MAPFGraphGrid : MonoBehaviour
         CreateRandomAgents(_agentCount);
         //SetupAgents();
         RandomDestinationAllAgents();
-        STAStarAllAgents();
+        CBSAllAgents();
+        //STAStarAllAgents();
         //CreateAllRenderEdges();
     }
     private void OnGridRefresh(MAPFNode node)
@@ -202,4 +204,18 @@ public class MAPFGraphGrid : MonoBehaviour
         agent.SetPath(_stAStar.GetSTAStarPath(agent));
     }
     
+    private void CBSAllAgents()
+    {
+        _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions);
+        Dictionary<MAPFAgent, List<MAPFNode>> solution = _cbsManager.Plan();
+        if (solution == null)
+        {
+            UnityEngine.Debug.Log("FEILED TO FIND CBS SOLUTION");
+            return;
+        }
+        foreach(MAPFAgent agent in _MAPFAgents)
+        {
+            agent.SetPath(solution[agent]);
+        }
+    }
 }
