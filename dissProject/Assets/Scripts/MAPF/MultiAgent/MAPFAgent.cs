@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MAPFAgent : MonoBehaviour
 {
+    public int agentId;
     float timer = 0;
     [SerializeField] GameObject _pathmarkerPrefab;
     [SerializeField] GameObject _completemarkerPrefab;

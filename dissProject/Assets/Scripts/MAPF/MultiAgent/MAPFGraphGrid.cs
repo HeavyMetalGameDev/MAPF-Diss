@@ -167,6 +167,7 @@ public class MAPFGraphGrid : MonoBehaviour
         for (int i = 0; i < agentCount; i++)
         {
             MAPFAgent agent = Instantiate(_agentPrefab).GetComponent<MAPFAgent>();
+            agent.agentId = i;
             if (!SetRandomAgentLocation(agent))
             {
                 UnityEngine.Debug.Log("NO MORE SPACE FOR AGENTS");
@@ -197,11 +198,12 @@ public class MAPFGraphGrid : MonoBehaviour
     {
 
         NewDestinationAgent(agent);
-        _gridGraphCopy = _gridGraph;
+        //CBSAllAgents();
+        /*_gridGraphCopy = _gridGraph;
 
         _stAStar.SetSTAStar(_gridGraphCopy, _mapDimensions);
         _stAStar.startingTimestep = agent.timesteps;
-        agent.SetPath(_stAStar.GetSTAStarPath(agent));
+        agent.SetPath(_stAStar.GetSTAStarPath(agent));*/
     }
     
     private void CBSAllAgents()
