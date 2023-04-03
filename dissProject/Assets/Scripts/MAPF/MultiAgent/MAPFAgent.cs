@@ -17,6 +17,7 @@ public class MAPFAgent : MonoBehaviour
 
     public void SetPath(List<MAPFNode> path)
     {
+        if (path == null) return;
         if (path.Count == 0) return;
         this.path = path;
         nextNode = path[0];
@@ -36,7 +37,7 @@ public class MAPFAgent : MonoBehaviour
     public void SetCurrent(MAPFNode node)
     {
         currentNode = node;
-        Debug.Log("CURRENT NODE SET");
+        //Debug.Log("CURRENT NODE SET");
     }
     void ArriveAtNode()
     {

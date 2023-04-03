@@ -132,7 +132,6 @@ public class STAStar
             workingNode = openList.Dequeue();
             if (workingNode.IsEqualTo(destination))
             {
-                UnityEngine.Debug.Log("Agent Planned");
                 sw.Stop();
                 //UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
                 sw.Reset();
@@ -149,7 +148,7 @@ public class STAStar
                     workingNode = workingNode.parent;
                     edgeTable.Add(workingNode.position + "" + prevNode.position + "" + workingNode.time, agent);
                 }
-
+                path.Add(source);
                 path.Reverse();
 
                 return path;
@@ -162,20 +161,20 @@ public class STAStar
                 {
 
                     continue;
-                }
+                } 
                 if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
                 {
-                    
+                    //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
                     continue;
                 }
-                if (edgeTable.ContainsKey(workingNode.position +""+ adjNode.position + "" + (workingNode.time))) //if this edge is reserved, dont consider it
+                if (edgeTable.ContainsKey(workingNode.position +""+ adjNode.position + "" + workingNode.time)) //if this edge is reserved, dont consider it
                 {
-
+                    //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
                     continue;
                 }
-                if (edgeTable.ContainsKey(adjNode.position + "" + workingNode.position + "" + (workingNode.time))) //if this edge in the opposite direction is reserved, dont consider it
+                if (edgeTable.ContainsKey(adjNode.position + "" + workingNode.position + "" + workingNode.time)) //if this edge in the opposite direction is reserved, dont consider it
                 {
-
+                    //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + adjNode.position + "" + workingNode.position + "" + workingNode.time);
                     continue;
                 }
                 if (!openList.Contains(adjNode) || adjNode.Equals(workingNode))
@@ -201,7 +200,7 @@ public class STAStar
             }
 
         }
-        UnityEngine.Debug.Log("NO PATH FOUND");
+        //UnityEngine.Debug.Log("NO PATH FOUND");
         path = null;
         return path;
 

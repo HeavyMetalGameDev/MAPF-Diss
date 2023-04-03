@@ -145,7 +145,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 return false;
             }
         }
-        UnityEngine.Debug.Log("VALID LOCATION FOUND");
+        //UnityEngine.Debug.Log("VALID LOCATION FOUND");
         agent.SetCurrent(randomNode);
         randomNode.isOccupied = true;
         agent.transform.position = new Vector3(randomNode.position.x, 0, randomNode.position.y);
@@ -212,7 +212,7 @@ public class MAPFGraphGrid : MonoBehaviour
         Dictionary<MAPFAgent, List<MAPFNode>> solution = _cbsManager.Plan();
         if (solution == null)
         {
-            UnityEngine.Debug.Log("FEILED TO FIND CBS SOLUTION");
+            UnityEngine.Debug.Log("FAILED TO FIND CBS SOLUTION");
             return;
         }
         foreach(MAPFAgent agent in _MAPFAgents)
