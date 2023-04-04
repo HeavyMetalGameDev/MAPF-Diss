@@ -6,7 +6,6 @@ public class CBSManager
 {
     public List<List<MAPFNode>> _gridGraph;
     public MAPFAgent[] _MAPFAgents;
-    public ConflictTreeNode rootOfTree;
     public Vector2 dimensions;
     public SimplePriorityQueue<ConflictTreeNode> _openList = new SimplePriorityQueue<ConflictTreeNode>();
 
@@ -148,13 +147,14 @@ public class ConflictTreeNode
             {
                 
                 List<MAPFNode> agentPath = solution[agent];
-                if (agentPath.Count <= t) continue; //if the agents path is shorter than t there cant be a collision so go to next agent
+                if (agentPath.Count <= t)continue;//if the agents path is shorter than t there cant be a collision so go to next agent
                 if (positionsAtTimestep.ContainsKey(agentPath[t].position))
                 {
                     MAPFAgent[] agents = { agent, (MAPFAgent)positionsAtTimestep[agentPath[t].position] };
                     //Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position +" time " + (t));
                     return new Collision(agents, agentPath[t], t);
                 }
+                positionsAtTimestep.Add(agentPath[t].position, agent);
                 if (agentPath.Count <= t+1) continue; //if there is a node at the next timestep continue
                 if (edgesAtTimestep.ContainsKey(agentPath[t].position + "" + agentPath[t+1].position))
                 {
@@ -162,7 +162,7 @@ public class ConflictTreeNode
                     //Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position +""+agentPath[t+1].position + "time " + (t));
                     return new Collision(agents, agentPath[t], agentPath[t+1], t);
                 }
-                positionsAtTimestep.Add(agentPath[t].position, agent);
+                
                 edgesAtTimestep.Add(agentPath[t].position + "" + agentPath[t + 1].position, agent);
                 edgesAtTimestep.Add(agentPath[t+1].position + "" + agentPath[t].position, agent); //reserve edge in opposite direction too
             }

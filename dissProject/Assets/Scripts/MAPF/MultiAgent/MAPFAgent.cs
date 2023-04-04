@@ -19,6 +19,7 @@ public class MAPFAgent : MonoBehaviour
     {
         if (path == null) return;
         if (path.Count == 0) return;
+        path.RemoveAt(0);
         this.path = path;
         nextNode = path[0];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
