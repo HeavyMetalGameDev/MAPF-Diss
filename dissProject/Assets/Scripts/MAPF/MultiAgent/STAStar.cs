@@ -127,8 +127,15 @@ public class STAStar
         MAPFNode workingNode = new MAPFNode();
         openList.Enqueue(source, source.f);
         sw.Start();
+        int iterations = 0;
         while (openList.Count != 0)
         {
+            iterations++;
+            if (iterations >= 1000)
+            {
+                UnityEngine.Debug.Log("EXPANDED 1000 TIMES");
+                return null;
+            }
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(destination))
             {
@@ -160,9 +167,9 @@ public class STAStar
                 if (closedList.Contains(adjNode))
                 {
 
-                    continue;
+                   //continue;
                 } 
-                if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
+                if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time+1))) //if this time position is reserved at the nest timestep, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
                     continue;
@@ -216,8 +223,7 @@ public class STAStar
         List<MAPFNode> adjacentNodes = new List<MAPFNode>();
         int nodeX = (int)(node.position.x*.2f);
         int nodeY = (int)(node.position.y * .2f);
-        MAPFNode newNode = new MAPFNode(node.position, node.nodeType, node.time, node.g, node.h, node.f);
-        //adjacentNodes.Add(newNode); //Add back when performing STA* as this introduces a wait action.
+        adjacentNodes.Add(new MAPFNode(node)); //Add back when performing STA* as this introduces a wait action.
         MAPFNode potentialNode; 
 
         if(nodeX + 1 < dimensions.x)
@@ -225,7 +231,7 @@ public class STAStar
             potentialNode = _graph[nodeY][nodeX + 1];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(potentialNode);
+                adjacentNodes.Add(new MAPFNode(potentialNode));
                 //Debug.Log(potentialNode);
             }
 
@@ -236,7 +242,7 @@ public class STAStar
             potentialNode = _graph[nodeY][nodeX - 1];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(potentialNode);
+                adjacentNodes.Add(new MAPFNode(potentialNode));
                 //Debug.Log(potentialNode);
             }
 
@@ -247,7 +253,7 @@ public class STAStar
             potentialNode = _graph[nodeY+1][nodeX];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(potentialNode);
+                adjacentNodes.Add(new MAPFNode(potentialNode));
                 //Debug.Log(potentialNode);
             }
 
@@ -259,7 +265,7 @@ public class STAStar
             potentialNode = _graph[nodeY-1][nodeX];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(potentialNode);
+                adjacentNodes.Add(new MAPFNode(potentialNode));
                 //Debug.Log(potentialNode);
             }
 

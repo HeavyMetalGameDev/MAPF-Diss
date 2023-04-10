@@ -202,7 +202,7 @@ public class ConflictTreeNode
                     return new Collision(agents, agentPath[t], t);
                 }
                 positionsAtTimestep.Add(agentPath[t].position, agent);
-                if (agentPath.Count <= t+1) continue; //if there is a node at the next timestep continue
+                if (agentPath.Count <= t+1) continue; //if there isnt a node at the next timestep continue
                 if (edgesAtTimestep.ContainsKey(agentPath[t].position + "" + agentPath[t+1].position))
                 {
                     MAPFAgent[] agents = { agent, (MAPFAgent)edgesAtTimestep[agentPath[t].position + "" + agentPath[t+1].position] };
@@ -211,7 +211,11 @@ public class ConflictTreeNode
                 }
                 
                 edgesAtTimestep.Add(agentPath[t].position + "" + agentPath[t + 1].position, agent);
-                edgesAtTimestep.Add(agentPath[t+1].position + "" + agentPath[t].position, agent); //reserve edge in opposite direction too
+                if(agentPath[t].position!= agentPath[t + 1].position)
+                {
+                    edgesAtTimestep.Add(agentPath[t + 1].position + "" + agentPath[t].position, agent); //reserve edge in opposite direction too
+                }
+                
             }
             
         }

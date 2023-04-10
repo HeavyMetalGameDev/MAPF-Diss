@@ -22,6 +22,15 @@ public class MAPFNode : IEquatable<MAPFNode>
         this.position = position;
         this.nodeType = nodeType;
     }
+    public MAPFNode(MAPFNode nodeToCopy) //constructor for a  copy
+    {
+        position = nodeToCopy.position;
+        nodeType = nodeToCopy.nodeType;
+        time = nodeToCopy.time;
+        g = nodeToCopy.g;
+        h = nodeToCopy.h;
+        f = nodeToCopy.f;
+    }
     public MAPFNode(Vector2 position, NodeTypeEnum nodeType, int time, int g, int h, int f)
     {
         this.position = position;
