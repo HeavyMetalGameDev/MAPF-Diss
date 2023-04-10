@@ -28,7 +28,6 @@ public class MAPFGraphGrid : MonoBehaviour
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
 
-    int _maxPathLength = 0;
     Vector2 _mapDimensions;
 
     private void OnEnable()

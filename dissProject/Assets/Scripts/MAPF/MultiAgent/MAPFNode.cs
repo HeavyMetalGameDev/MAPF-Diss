@@ -34,7 +34,7 @@ public class MAPFNode : IEquatable<MAPFNode>
     public MAPFNode()
     {
     }
-    public bool IsEqualTo(MAPFNode compareNode)
+    public bool PositionIsEqualTo(MAPFNode compareNode)
     {
         if (position.Equals(compareNode.position))
         {
@@ -59,7 +59,7 @@ public class MAPFNode : IEquatable<MAPFNode>
 
     public bool Equals(MAPFNode node)
     {
-        if (node.position.Equals(position))
+        if (node.position.Equals(position) && node.time == time)
         {
             return true;
         }

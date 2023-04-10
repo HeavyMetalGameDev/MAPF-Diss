@@ -65,7 +65,7 @@ public class STAStar
         while (openList.Count!= 0)
         {
             workingNode = openList.Dequeue();
-            if (workingNode.IsEqualTo(destination))
+            if (workingNode.PositionIsEqualTo(destination))
             {
                 break;
             }
@@ -130,7 +130,7 @@ public class STAStar
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
-            if (workingNode.IsEqualTo(destination))
+            if (workingNode.PositionIsEqualTo(destination))
             {
                 sw.Stop();
                 //UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
@@ -179,6 +179,7 @@ public class STAStar
                 }
                 if (!openList.Contains(adjNode) || adjNode.Equals(workingNode))
                 {
+                    //UnityEngine.Debug.Log("SAME NODE GENERATED");
                     adjNode.g = workingNode.g + 5;
                     adjNode.time = workingNode.time + 1;
                     adjNode.h = CalculateManhattan(adjNode, destination);
@@ -215,7 +216,8 @@ public class STAStar
         List<MAPFNode> adjacentNodes = new List<MAPFNode>();
         int nodeX = (int)(node.position.x*.2f);
         int nodeY = (int)(node.position.y * .2f);
-        adjacentNodes.Add(node); //Add back when performing STA* as this introduces a wait action.
+        MAPFNode newNode = new MAPFNode(node.position, node.nodeType, node.time, node.g, node.h, node.f);
+        //adjacentNodes.Add(newNode); //Add back when performing STA* as this introduces a wait action.
         MAPFNode potentialNode; 
 
         if(nodeX + 1 < dimensions.x)

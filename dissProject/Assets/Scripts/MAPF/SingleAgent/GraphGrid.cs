@@ -153,7 +153,6 @@ public class GraphGrid : MonoBehaviour
         int counter = 0;
         foreach (Node node in _nodes)
         {
-            bool isWalkable = false; //used to toggle marker colour later in function
             GameObject createdNode = Instantiate(_nodePrefab,transform);
 
             //Set node values
@@ -165,7 +164,6 @@ public class GraphGrid : MonoBehaviour
 
             if (node.nodeType == NodeTypeEnum.WALKABLE)
             {
-                isWalkable = true;
                 _gridGraph.AddVertex(createdNodeComponent);
                 
                 _nodeDict.Add(createdNodeComponent.position, createdNodeComponent);
