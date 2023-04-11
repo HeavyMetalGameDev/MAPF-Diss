@@ -256,7 +256,7 @@ MonoBehaviour:
   _MAPFAgents: []
   _defaultMaterial: {fileID: 0}
   _mapName: Assets/BenchmarkMaps/CBSTest.map
-  _agentCount: 10
+  _agentCount: 8
 --- !u!1 &296800104
 GameObject:
   m_ObjectHideFlags: 0

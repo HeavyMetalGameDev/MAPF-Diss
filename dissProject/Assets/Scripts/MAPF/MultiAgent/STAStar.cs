@@ -128,20 +128,38 @@ public class STAStar
         openList.Enqueue(source, source.f);
         sw.Start();
         int iterations = 0;
+        int pathPadding = 0;
         while (openList.Count != 0)
         {
             iterations++;
-            if (iterations >= 1000)
+            //UnityEngine.Debug.Log(workingNode.position + " " + workingNode.time);
+            if (iterations >= 10000)
             {
-                UnityEngine.Debug.Log("EXPANDED 1000 TIMES");
+                UnityEngine.Debug.Log("EXPANDED 10000 TIMES");
                 return null;
             }
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(destination))
             {
-                sw.Stop();
+                pathPadding++;
+                if (pathPadding <= 20)
+                {
+                    if (rTable.ContainsKey(workingNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
+                    {
+                        //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
+                        //ProcessNewAdjacentNodes();
+                        continue;
+                    }
+                    else
+                    {
+                        MAPFNode newNode = new MAPFNode(workingNode);
+                        newNode.time++;
+                        newNode.parent = workingNode;
+                        openList.Enqueue(newNode, newNode.GetFCost());
+                    }
+                    continue;
+                }
                 //UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
-                sw.Reset();
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
                 {
@@ -166,8 +184,7 @@ public class STAStar
             {
                 if (closedList.Contains(adjNode))
                 {
-
-                   //continue;
+                   continue;
                 } 
                 if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time+1))) //if this time position is reserved at the nest timestep, dont consider it
                 {
@@ -184,7 +201,7 @@ public class STAStar
                     //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + adjNode.position + "" + workingNode.position + "" + workingNode.time);
                     continue;
                 }
-                if (!openList.Contains(adjNode) || adjNode.Equals(workingNode))
+                if (!openList.Contains(adjNode) || adjNode.PositionIsEqualTo(workingNode))
                 {
                     //UnityEngine.Debug.Log("SAME NODE GENERATED");
                     adjNode.g = workingNode.g + 5;
@@ -206,7 +223,53 @@ public class STAStar
                 }
 
             }
+            void ProcessNewAdjacentNodes()
+            {
+                foreach (MAPFNode adjNode in GetAdjacentNodes(workingNode))
+                {
+                    MAPFNode newNode = new MAPFNode(adjNode);
+                    if (closedList.Contains(newNode))
+                    {
+                        continue;
+                    }
+                    if (rTable.ContainsKey(newNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
+                    {
+                        //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
+                        continue;
+                    }
+                    if (edgeTable.ContainsKey(workingNode.position + "" + newNode.position + "" + workingNode.time)) //if this edge is reserved, dont consider it
+                    {
+                        //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
+                        continue;
+                    }
+                    if (edgeTable.ContainsKey(newNode.position + "" + workingNode.position + "" + workingNode.time)) //if this edge in the opposite direction is reserved, dont consider it
+                    {
+                        //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + adjNode.position + "" + workingNode.position + "" + workingNode.time);
+                        continue;
+                    }
+                    if (!openList.Contains(newNode))
+                    {
+                        //UnityEngine.Debug.Log("SAME NODE GENERATED");
+                        newNode.g = workingNode.g + 5;
+                        newNode.time = workingNode.time + 1;
+                        newNode.h = CalculateManhattan(newNode, destination);
+                        newNode.parent = workingNode;
 
+                        openList.Enqueue(newNode, newNode.GetFCost());
+                    }
+                    else
+                    {
+                        if (newNode.GetFCost() >= workingNode.g + 5 + newNode.h)
+                        {
+                            newNode.g = workingNode.g + 5;
+                            newNode.time = workingNode.time + 1;
+                            openList.UpdatePriority(newNode, newNode.GetFCost());
+                            newNode.parent = workingNode;
+                        }
+                    }
+
+                }
+            }
         }
         //UnityEngine.Debug.Log("NO PATH FOUND");
         path = null;
@@ -223,7 +286,6 @@ public class STAStar
         List<MAPFNode> adjacentNodes = new List<MAPFNode>();
         int nodeX = (int)(node.position.x*.2f);
         int nodeY = (int)(node.position.y * .2f);
-        adjacentNodes.Add(new MAPFNode(node)); //Add back when performing STA* as this introduces a wait action.
         MAPFNode potentialNode; 
 
         if(nodeX + 1 < dimensions.x)
@@ -231,7 +293,7 @@ public class STAStar
             potentialNode = _graph[nodeY][nodeX + 1];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(new MAPFNode(potentialNode));
+                adjacentNodes.Add(potentialNode);
                 //Debug.Log(potentialNode);
             }
 
@@ -242,7 +304,7 @@ public class STAStar
             potentialNode = _graph[nodeY][nodeX - 1];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(new MAPFNode(potentialNode));
+                adjacentNodes.Add(potentialNode);
                 //Debug.Log(potentialNode);
             }
 
@@ -253,7 +315,7 @@ public class STAStar
             potentialNode = _graph[nodeY+1][nodeX];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(new MAPFNode(potentialNode));
+                adjacentNodes.Add(potentialNode);
                 //Debug.Log(potentialNode);
             }
 
@@ -265,7 +327,7 @@ public class STAStar
             potentialNode = _graph[nodeY-1][nodeX];
             if (potentialNode.nodeType.Equals(NodeTypeEnum.WALKABLE))
             {
-                adjacentNodes.Add(new MAPFNode(potentialNode));
+                adjacentNodes.Add(potentialNode);
                 //Debug.Log(potentialNode);
             }
 
