@@ -4,74 +4,72 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class MAPFNode : IEquatable<MAPFNode>
+public class MapNode: IEquatable<MapNode>
 {
     [SerializeField] public Vector2 position;
     [SerializeField] public NodeTypeEnum nodeType;
     public GridMarker _nodeMarker;
     public bool isTargeted;
     public bool isOccupied;
-    public MAPFNode parent;
-    public int time;
-    public int g;
-    public int h;
-    public int f;
 
-    public MAPFNode(Vector2 position, NodeTypeEnum nodeType)
+    public override string ToString()
+    {
+        return position.ToString();
+    }
+    public MapNode(Vector2 position, NodeTypeEnum nodeType)
     {
         this.position = position;
         this.nodeType = nodeType;
     }
-    public MAPFNode(MAPFNode nodeToCopy) //constructor for a  copy
+    public MapNode(MapNode nodeToCopy) //constructor for a  copy
     {
         position = nodeToCopy.position;
         nodeType = nodeToCopy.nodeType;
-        time = nodeToCopy.time;
-        g = nodeToCopy.g;
-        h = nodeToCopy.h;
-        f = nodeToCopy.f;
     }
-    public MAPFNode(Vector2 position, NodeTypeEnum nodeType, int time, int g, int h, int f)
-    {
-        this.position = position;
-        this.nodeType = nodeType;
-        this.time = time;
-        this.g = g;
-        this.h = h;
-        this.f = f;
-    }
-    public MAPFNode()
+    public MapNode()
     {
     }
-    public bool PositionIsEqualTo(MAPFNode compareNode)
+    public bool Equals(MapNode compareNode)
     {
-        if (position.Equals(compareNode.position))
-        {
-            return true;
-        }
+        if (position.Equals(compareNode.position)) return true;
         return false;
     }
     public void SetPos(Vector2 pos)
     {
         position = pos;
     }
+}
 
-    public override string ToString()
+public class MAPFNode : IEquatable<MAPFNode>
+{
+    public MapNode node;
+    public int g;
+    public int h;
+    public int time;
+    public MAPFNode parent;
+
+    public MAPFNode(MapNode node, int g, int h, int time, MAPFNode parent)
     {
-        return "Node: "+position + " isOccupied: " + isOccupied + " NodeType: " + nodeType;
-    }
-    public int GetFCost()
-    {
-        f = g + h;
-        return f;
+        this.node = node;
+        this.g = g;
+        this.h = h;
+        this.time = time;
+        this.parent = parent;
     }
 
-    public bool Equals(MAPFNode node)
+    public int GetCost()
     {
-        if (node.position.Equals(position) && node.time == time)
-        {
-            return true;
-        }
+        return g + h;
+    }
+
+    public bool Equals(MAPFNode compareNode)
+    {
+        if (node.position.Equals(compareNode.node.position) && time == compareNode.time) return true;
         return false;
+    }
+
+    public bool PositionIsEqualTo(MapNode compareNode)
+    {
+        return node.position.Equals(compareNode.position);
     }
 }

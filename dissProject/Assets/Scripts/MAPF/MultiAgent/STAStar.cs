@@ -8,267 +8,147 @@ using System.Diagnostics;
 
 public class STAStar
 {
-    public List<List<MAPFNode>> _graph = new List<List<MAPFNode>>();
+    public List<List<MapNode>> _graph = new List<List<MapNode>>();
     Vector2 dimensions;
     public Hashtable rTable = new Hashtable(); //reservation table for node positions
     public Hashtable edgeTable = new Hashtable(); //reservation table for edge traversal
     public int startingTimestep=0;
-    public STAStar(List<List<MAPFNode>> Graph, Vector2 Dimensions)
-    {
-        int yCount = 0;
-        foreach(List<MAPFNode> yNodes in Graph)
-        {
-            int xCount = 0;
-            _graph.Add(new List<MAPFNode>());
-            foreach(MAPFNode xNodes in yNodes)
-            {
-                _graph[yCount].Add(new MAPFNode(Graph[yCount][xCount].position, Graph[yCount][xCount].nodeType));
-                xCount += 1;
-            }
-            yCount += 1;
-        }
-        dimensions = Dimensions;
-    }
     public STAStar()
     {
 
     }
-    public void SetSTAStar(List<List<MAPFNode>> Graph, Vector2 Dimensions)
+    public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions)
     {
-        int yCount = 0;
-        _graph = new List<List<MAPFNode>>();
-        foreach (List<MAPFNode> yNodes in Graph)
-        {
-            int xCount = 0;
-            _graph.Add(new List<MAPFNode>());
-            foreach (MAPFNode xNodes in yNodes)
-            {
-                _graph[yCount].Add(new MAPFNode(Graph[yCount][xCount].position, Graph[yCount][xCount].nodeType));
-                xCount += 1;
-            }
-            yCount += 1;
-        }
+        _graph = Graph;
         dimensions = Dimensions;
     }
 
-    public List<MAPFNode> GetSingleAgentPath(MAPFAgent agent)
+    public List<MapNode> GetSingleAgentPath(MAPFAgent agent)
     {
-        Stopwatch sw = new Stopwatch();
-        MAPFNode source = agent.currentNode;
-        MAPFNode destination = agent.destinationNode;
-        List<MAPFNode> path = new List<MAPFNode>();
+        MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, 0, null);
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
-        List<MAPFNode> closedList = new List<MAPFNode>();
-        MAPFNode workingNode = new MAPFNode();
-        openList.Enqueue(source,source.f);
-        sw.Start();
-        while (openList.Count!= 0)
-        {
-            workingNode = openList.Dequeue();
-            if (workingNode.PositionIsEqualTo(destination))
-            {
-                break;
-            }
-            closedList.Add(workingNode);
-            
-            foreach (MAPFNode adjNode in GetAdjacentNodes(workingNode))
-            {
-                if (closedList.Contains(adjNode))
-                {
-                    
-                    continue;
-                }
-                
-                if (!openList.Contains(adjNode))
-                {
-                    adjNode.g = workingNode.g + 5;
-                    adjNode.h = CalculateManhattan(adjNode, destination);
-                    adjNode.parent = workingNode;
-
-                    openList.Enqueue(adjNode, adjNode.GetFCost());
-                }
-                else
-                {
-                    if (adjNode.GetFCost() >= workingNode.g + 5 + adjNode.h)
-                    {
-                        adjNode.g = workingNode.g + 5;
-                        openList.UpdatePriority(adjNode,adjNode.GetFCost());
-                        adjNode.parent = workingNode;
-                    }
-                }
-
-            }
-            
-        }
-        sw.Stop();
-        UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
-        sw.Reset();
-
-        while (workingNode.parent != null)
-        {
-            //Debug.Log(workingNode + " - " + workingNode.parent);
-            path.Add(workingNode);
-            workingNode = workingNode.parent;
-        }
-        path.Reverse();
-
-        return path;
-    }
-
-    public List<MAPFNode> GetSTAStarPath(MAPFAgent agent)
-    {
-        Stopwatch sw = new Stopwatch();
-        MAPFNode source = _graph[(int)(agent.currentNode.position.y*.2f)][(int)(agent.currentNode.position.x * .2f)];
-        source.time = startingTimestep;
-        MAPFNode destination = _graph[(int)(agent.destinationNode.position.y * .2f)][(int)(agent.destinationNode.position.x * .2f)];
-        List<MAPFNode> path = new List<MAPFNode>();
-        SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
-        List<MAPFNode> closedList = new List<MAPFNode>();
-        MAPFNode workingNode = new MAPFNode();
-        openList.Enqueue(source, source.f);
-        sw.Start();
-        int iterations = 0;
-        int pathPadding = 0;
+        Dictionary<Vector2, MAPFNode> closedList = new Dictionary<Vector2, MAPFNode>();
+        List<MapNode> path = new List<MapNode>();
+        MAPFNode workingNode;
+        openList.Enqueue(source, source.GetCost());
         while (openList.Count != 0)
         {
-            iterations++;
-            //UnityEngine.Debug.Log(workingNode.position + " " + workingNode.time);
-            if (iterations >= 10000)
-            {
-                UnityEngine.Debug.Log("EXPANDED 10000 TIMES");
-                return null;
-            }
             workingNode = openList.Dequeue();
-            if (workingNode.PositionIsEqualTo(destination))
+            if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
-                pathPadding++;
-                if (pathPadding <= 20)
+                while (workingNode.parent != null)
                 {
-                    if (rTable.ContainsKey(workingNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
-                    {
-                        //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
-                        //ProcessNewAdjacentNodes();
-                        continue;
-                    }
-                    else
-                    {
-                        MAPFNode newNode = new MAPFNode(workingNode);
-                        newNode.time++;
-                        newNode.parent = workingNode;
-                        openList.Enqueue(newNode, newNode.GetFCost());
-                    }
-                    continue;
+
+                    //Debug.Log(workingNode + " - " + workingNode.parent);
+                    path.Add(workingNode.node);
+                    workingNode = workingNode.parent;
                 }
-                //UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
+                path.Add(agent.currentNode);
+                path.Reverse();
+
+                return path;
+            }
+            closedList.Add(workingNode.node.position, workingNode);
+            foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
+            {
+                if (!closedList.ContainsKey(adjNode.position))
+                {
+                    MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, CalculateManhattan(adjNode, agent.destinationNode), 0, workingNode);
+                    bool found = false;
+                    foreach(MAPFNode node in openList)
+                    {
+                        if (node.PositionIsEqualTo(newNode.node))
+                        {
+                            found = true;
+                        }
+                    }
+                    if (!found)
+                    {
+                        openList.Enqueue(newNode, newNode.GetCost());
+                    }
+                }
+
+            }
+            
+        }
+        //UnityEngine.Debug.Log("NO PATH FOUND");
+        return null;
+    }
+
+    public List<MapNode> GetSTAStarPath(MAPFAgent agent)
+    {
+        MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, startingTimestep, null);
+        List<MapNode> path = new List<MapNode>();
+        SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
+        Dictionary<(Vector2,int),MAPFNode> closedList = new Dictionary<(Vector2, int), MAPFNode>();
+        MAPFNode workingNode;
+        openList.Enqueue(source, source.GetCost());
+        while (openList.Count != 0)
+        {
+            workingNode = openList.Dequeue();
+            if (workingNode.PositionIsEqualTo(agent.destinationNode))
+            {
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
                 {
 
                     //Debug.Log(workingNode + " - " + workingNode.parent);
-                    path.Add(workingNode);
-                    rTable.Add(workingNode.position + "" + workingNode.time, agent);
+                    path.Add(workingNode.node);
+                    rTable.Add(workingNode.node + "" + workingNode.time, agent);
                     
 
                     prevNode = workingNode;
                     workingNode = workingNode.parent;
-                    edgeTable.Add(workingNode.position + "" + prevNode.position + "" + workingNode.time, agent);
+                    edgeTable.Add(workingNode.node + "" + prevNode.node + "" + workingNode.time, agent);
                 }
-                path.Add(source);
+                path.Add(agent.currentNode);
                 path.Reverse();
 
                 return path;
             }
-            closedList.Add(workingNode);
-
-            foreach (MAPFNode adjNode in GetAdjacentNodes(workingNode))
+            
+            foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
             {
-                if (closedList.Contains(adjNode))
+                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, CalculateManhattan(adjNode, agent.destinationNode), workingNode.time + 1, workingNode);
+                if (closedList.ContainsKey((adjNode.position, newNode.time)))
                 {
-                   continue;
-                } 
-                if (rTable.ContainsKey(adjNode.position + "" + (workingNode.time+1))) //if this time position is reserved at the nest timestep, dont consider it
+                    MAPFNode closedListNode = closedList[(adjNode.position, newNode.time)];
+                    if (closedListNode.GetCost() > newNode.GetCost())
+                    {
+                        closedList[(adjNode.position, newNode.time)] = newNode;
+                        openList.Enqueue(newNode, newNode.GetCost());
+                    }
+                    continue;
+                }
+                if (rTable.ContainsKey(adjNode + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
                     continue;
                 }
-                if (edgeTable.ContainsKey(workingNode.position +""+ adjNode.position + "" + workingNode.time)) //if this edge is reserved, dont consider it
+                if (edgeTable.ContainsKey(workingNode.node + "" + adjNode + "" + workingNode.time)) //if this edge is reserved, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
                     continue;
                 }
-                if (edgeTable.ContainsKey(adjNode.position + "" + workingNode.position + "" + workingNode.time)) //if this edge in the opposite direction is reserved, dont consider it
+                if (edgeTable.ContainsKey(adjNode + "" + workingNode.node + "" + workingNode.time)) //if this edge in the opposite direction is reserved, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + adjNode.position + "" + workingNode.position + "" + workingNode.time);
                     continue;
                 }
-                if (!openList.Contains(adjNode) || adjNode.PositionIsEqualTo(workingNode))
-                {
-                    //UnityEngine.Debug.Log("SAME NODE GENERATED");
-                    adjNode.g = workingNode.g + 5;
-                    adjNode.time = workingNode.time + 1;
-                    adjNode.h = CalculateManhattan(adjNode, destination);
-                    adjNode.parent = workingNode;
 
-                    openList.Enqueue(adjNode, adjNode.GetFCost());
-                }
-                else
+                bool found = false;
+                foreach (MAPFNode node in openList)
                 {
-                    if (adjNode.GetFCost() >= workingNode.g + 5 + adjNode.h)
+                    if (node.PositionIsEqualTo(newNode.node))
                     {
-                        adjNode.g = workingNode.g + 5;
-                        adjNode.time = workingNode.time + 1;
-                        openList.UpdatePriority(adjNode, adjNode.GetFCost());
-                        adjNode.parent = workingNode;
+                        found = true;
                     }
                 }
-
-            }
-            void ProcessNewAdjacentNodes()
-            {
-                foreach (MAPFNode adjNode in GetAdjacentNodes(workingNode))
+                if (!found)
                 {
-                    MAPFNode newNode = new MAPFNode(adjNode);
-                    if (closedList.Contains(newNode))
-                    {
-                        continue;
-                    }
-                    if (rTable.ContainsKey(newNode.position + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
-                    {
-                        //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
-                        continue;
-                    }
-                    if (edgeTable.ContainsKey(workingNode.position + "" + newNode.position + "" + workingNode.time)) //if this edge is reserved, dont consider it
-                    {
-                        //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
-                        continue;
-                    }
-                    if (edgeTable.ContainsKey(newNode.position + "" + workingNode.position + "" + workingNode.time)) //if this edge in the opposite direction is reserved, dont consider it
-                    {
-                        //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + adjNode.position + "" + workingNode.position + "" + workingNode.time);
-                        continue;
-                    }
-                    if (!openList.Contains(newNode))
-                    {
-                        //UnityEngine.Debug.Log("SAME NODE GENERATED");
-                        newNode.g = workingNode.g + 5;
-                        newNode.time = workingNode.time + 1;
-                        newNode.h = CalculateManhattan(newNode, destination);
-                        newNode.parent = workingNode;
-
-                        openList.Enqueue(newNode, newNode.GetFCost());
-                    }
-                    else
-                    {
-                        if (newNode.GetFCost() >= workingNode.g + 5 + newNode.h)
-                        {
-                            newNode.g = workingNode.g + 5;
-                            newNode.time = workingNode.time + 1;
-                            openList.UpdatePriority(newNode, newNode.GetFCost());
-                            newNode.parent = workingNode;
-                        }
-                    }
-
+                    openList.Enqueue(newNode, newNode.GetCost());
                 }
+
             }
         }
         //UnityEngine.Debug.Log("NO PATH FOUND");
@@ -276,17 +156,59 @@ public class STAStar
         return path;
 
     }
-    public int CalculateManhattan(MAPFNode start, MAPFNode end)
+    public int CalculateManhattan(MapNode start, MapNode end)
     {
         return (int)(Mathf.Abs(start.position.x - end.position.x) + (int)Mathf.Abs(start.position.y - end.position.y));
     }
 
-    public List<MAPFNode> GetAdjacentNodes(MAPFNode node)
+    public int CalculateNodeHeuristic(MapNode targetNode, MapNode destination)
     {
-        List<MAPFNode> adjacentNodes = new List<MAPFNode>();
-        int nodeX = (int)(node.position.x*.2f);
-        int nodeY = (int)(node.position.y * .2f);
-        MAPFNode potentialNode; 
+        MAPFNode source = new MAPFNode(destination, 0, 0, startingTimestep, null);
+        SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
+        Dictionary<Vector2, MAPFNode> closedList = new Dictionary<Vector2, MAPFNode>();
+        MAPFNode workingNode;
+        openList.Enqueue(source, source.GetCost());
+        while (openList.Count != 0)
+        {
+            workingNode = openList.Dequeue();
+            if (workingNode.PositionIsEqualTo(targetNode))
+            {
+                return workingNode.g;
+            }
+            closedList.Add(workingNode.node.position, workingNode);
+            foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
+            {
+                if (!closedList.ContainsKey(adjNode.position))
+                {
+                    MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, CalculateManhattan(adjNode, targetNode), 0, workingNode);
+                    bool found = false;
+                    foreach (MAPFNode node in openList)
+                    {
+                        if (node.PositionIsEqualTo(newNode.node))
+                        {
+                            found = true;
+                        }
+                    }
+                    if (!found)
+                    {
+                        openList.Enqueue(newNode, newNode.GetCost());
+                    }
+                }
+
+            }
+
+        }
+        //UnityEngine.Debug.Log("NO PATH FOUND");
+        return -1;
+    }
+
+    public List<MapNode> GetAdjacentNodes(MAPFNode node)
+    {
+        List<MapNode> adjacentNodes = new List<MapNode>();
+        int nodeX = (int)(node.node.position.x*.2f);
+        int nodeY = (int)(node.node.position.y * .2f);
+        adjacentNodes.Add(node.node);
+        MapNode potentialNode; 
 
         if(nodeX + 1 < dimensions.x)
         {

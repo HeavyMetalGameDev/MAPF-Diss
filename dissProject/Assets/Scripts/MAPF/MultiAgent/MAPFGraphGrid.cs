@@ -14,9 +14,8 @@ public class MAPFGraphGrid : MonoBehaviour
     [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
-    Dictionary<Vector2, MAPFNode> _nodeDict = new Dictionary<Vector2, MAPFNode>();
-    List<List<MAPFNode>> _gridGraph = new List<List<MAPFNode>>();
-    List<List<MAPFNode>> _gridGraphCopy;
+    Dictionary<Vector2, MapNode> _nodeDict = new Dictionary<Vector2, MapNode>();
+    List<List<MapNode>> _gridGraph = new List<List<MapNode>>();
     MAPFMapReader _mapReader = new MAPFMapReader();
     [SerializeField] string _mapName;
 
@@ -46,11 +45,12 @@ public class MAPFGraphGrid : MonoBehaviour
         CreateRandomAgents(_agentCount);
         //SetupAgents();
         RandomDestinationAllAgents();
+        //AStarAllAgents();
         CBSAllAgents();
         //STAStarAllAgents();
         //CreateAllRenderEdges();
     }
-    private void OnGridRefresh(MAPFNode node)
+    private void OnGridRefresh(MapNode node)
     {
         if (node.nodeType.Equals(NodeTypeEnum.NOT_WALKABLE))
         {
@@ -64,7 +64,7 @@ public class MAPFGraphGrid : MonoBehaviour
         }
     }
 
-    private void RemoveNodeAndEdges(MAPFNode node)
+    private void RemoveNodeAndEdges(MapNode node)
     {
         ///TODO
         _nodeDict[node.position] = node;
@@ -79,10 +79,10 @@ public class MAPFGraphGrid : MonoBehaviour
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
     {
         //TODO
-        foreach (List<MAPFNode> nodeList in _gridGraph)
+        foreach (List<MapNode> nodeList in _gridGraph)
         {
             int counter = 0;
-            foreach (MAPFNode node in nodeList)
+            foreach (MapNode node in nodeList)
             {
                 if (node.nodeType == NodeTypeEnum.WALKABLE)
                 {
@@ -100,12 +100,13 @@ public class MAPFGraphGrid : MonoBehaviour
     }
     private void CreateSTAStar()
     {
-        _stAStar = new STAStar(_gridGraph, _mapDimensions);
+        _stAStar = new STAStar();
+        _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
     }
     private void NewDestinationAgent(MAPFAgent agent)
     {
         //SetNodeMaterial(agent.destinationNode, _defaultMaterial);
-        MAPFNode randomNode;
+        MapNode randomNode;
         if (agent.destinationNode != null)
         {
             randomNode = agent.destinationNode;
@@ -128,7 +129,7 @@ public class MAPFGraphGrid : MonoBehaviour
     }
     private bool SetRandomAgentLocation(MAPFAgent agent)
     {
-        MAPFNode randomNode = null;
+        MapNode randomNode = null;
         int timeout = 100; //times to attempt random node asignment to avoid deadlock
         while (randomNode == null || randomNode.nodeType == NodeTypeEnum.NOT_WALKABLE || randomNode.isOccupied)
         {
@@ -183,14 +184,20 @@ public class MAPFGraphGrid : MonoBehaviour
         _stAStar = new STAStar();
         foreach(MAPFAgent agent in _MAPFAgents)
         {
-            
-            _gridGraphCopy = _gridGraph;
-
-            _stAStar.SetSTAStar(_gridGraphCopy, _mapDimensions);
+            _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
             agent.SetPath(_stAStar.GetSTAStarPath(agent));
         }
         
         
+    }
+    private void AStarAllAgents()
+    {
+        _stAStar = new STAStar();
+        foreach (MAPFAgent agent in _MAPFAgents)
+        {
+            _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
+            agent.SetPath(_stAStar.GetSingleAgentPath(agent));
+        }
     }
 
     private void OnAgentArrived(MAPFAgent agent)
@@ -208,7 +215,7 @@ public class MAPFGraphGrid : MonoBehaviour
     private void CBSAllAgents()
     {
         _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions);
-        Dictionary<MAPFAgent, List<MAPFNode>> solution = _cbsManager.Plan();
+        Dictionary<MAPFAgent, List<MapNode>> solution = _cbsManager.Plan();
         if (solution == null)
         {
             UnityEngine.Debug.Log("FAILED TO FIND CBS SOLUTION");

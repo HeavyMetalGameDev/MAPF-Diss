@@ -4,12 +4,12 @@ using UnityEngine;
 using Priority_Queue;
 public class CBSManager
 {
-    public List<List<MAPFNode>> _gridGraph;
+    public List<List<MapNode>> _gridGraph;
     public MAPFAgent[] _MAPFAgents;
     public Vector2 dimensions;
     public SimplePriorityQueue<ConflictTreeNode> _openList = new SimplePriorityQueue<ConflictTreeNode>();
 
-    public Dictionary<MAPFAgent, List<MAPFNode>> Plan()
+    public Dictionary<MAPFAgent, List<MapNode>> Plan()
     {
         int expansions = 0;
         ConflictTreeNode rootNode = new ConflictTreeNode();
@@ -38,17 +38,17 @@ public class CBSManager
                 }
                 if (firstCollision.isVertex)
                 {
-                    Debug.Log("CONSTRAINT " + firstCollision.node.position + firstCollision.timestep + " FOR AGENT " + agent.agentId);
+                    //Debug.Log("CONSTRAINT " + firstCollision.node.position + firstCollision.timestep + " FOR AGENT " + agent.agentId);
                     newNode.constraints.Add(new Constraint(agent, firstCollision.node, firstCollision.timestep));
                 }
                 else
                 {
-                    Debug.Log("CONSTRAINT " + firstCollision.node.position + ""+ firstCollision.node2.position + firstCollision.timestep + " FOR AGENT " + agent.agentId);
+                    //Debug.Log("CONSTRAINT " + firstCollision.node.position + ""+ firstCollision.node2.position + firstCollision.timestep + " FOR AGENT " + agent.agentId);
                     newNode.constraints.Add(new Constraint(agent, firstCollision.node, firstCollision.node2, firstCollision.timestep));
                 }
                 //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                 newNode.parent = workingNode;
-                newNode.solution = new Dictionary<MAPFAgent, List<MAPFNode>>(workingNode.solution);
+                newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
                 newNode.CalculatePathForAgent(_gridGraph,dimensions,agent);
                 newNode.CalculateNodeCost();
                 if (newNode.nodeCost != -1) // if a path has been found for all agents
@@ -56,18 +56,13 @@ public class CBSManager
                     _openList.Enqueue(newNode, newNode.nodeCost);
                 }
                 //Debug.Log("END Agent " + agent.agentId);
-                if (expansions >= 100000)
-                {
-                    Debug.Log(newNode.constraints.Count);
-                    return null;
-                }
 
             }
         }
         return null; //failed to find a solution
     }
 
-    public CBSManager(List<List<MAPFNode>> gridGraph, MAPFAgent[] MAPFAgents, Vector2 dimensions)
+    public CBSManager(List<List<MapNode>> gridGraph, MAPFAgent[] MAPFAgents, Vector2 dimensions)
     {
         _gridGraph = gridGraph;
         _MAPFAgents = MAPFAgents;
@@ -84,21 +79,21 @@ public class ConflictTreeNode
     public HashSet<Constraint> constraints = new();
     public int nodeCost;
     int maxPathLength;
-    public Dictionary<MAPFAgent, List<MAPFNode>> solution; //a dictionary assigning one path to one agent
+    public Dictionary<MAPFAgent, List<MapNode>> solution; //a dictionary assigning one path to one agent
 
-    public Dictionary<MAPFAgent, List<MAPFNode>> GetSolution()
+    public Dictionary<MAPFAgent, List<MapNode>> GetSolution()
     {
         return solution;
     }
     public void SetupSolution(MAPFAgent[] agents) //add empty path for each agent
     {
-        solution = new Dictionary<MAPFAgent, List<MAPFNode>>();
+        solution = new Dictionary<MAPFAgent, List<MapNode>>();
         foreach (MAPFAgent agent in agents)
         {
-            solution.Add(agent, new List<MAPFNode>());
+            solution.Add(agent, new List<MapNode>());
         }
     }
-    public void CalculateNodePaths(List<List<MAPFNode>> _gridGraph, Vector2 dimensions)
+    public void CalculateNodePaths(List<List<MapNode>> _gridGraph, Vector2 dimensions)
     {
         
         List<MAPFAgent> solutionAgents = new List<MAPFAgent>(solution.Keys);
@@ -130,7 +125,7 @@ public class ConflictTreeNode
             sTAStar.SetSTAStar(_gridGraph, dimensions);
             sTAStar.rTable = agentConstraints;
             sTAStar.edgeTable = agentEdgeConstraints;
-            List<MAPFNode> agentPath = sTAStar.GetSTAStarPath(agent);
+            List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent);
             if(agentPath== null) //if we failed to find a path for an agent, exit out
             {
                 
@@ -143,7 +138,7 @@ public class ConflictTreeNode
         //Paths found successfully!
     }
 
-    public void CalculatePathForAgent(List<List<MAPFNode>> _gridGraph, Vector2 dimensions, MAPFAgent agent)
+    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2 dimensions, MAPFAgent agent)
     {
         Hashtable agentConstraints;
         Hashtable agentEdgeConstraints;
@@ -170,7 +165,7 @@ public class ConflictTreeNode
         sTAStar.SetSTAStar(_gridGraph, dimensions);
         sTAStar.rTable = agentConstraints;
         sTAStar.edgeTable = agentEdgeConstraints;
-        List<MAPFNode> agentPath = sTAStar.GetSTAStarPath(agent);
+        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {
             nodeCost = -1;
@@ -193,7 +188,7 @@ public class ConflictTreeNode
             foreach (MAPFAgent agent in solution.Keys)
             {
                 
-                List<MAPFNode> agentPath = solution[agent];
+                List<MapNode> agentPath = solution[agent];
                 if (agentPath.Count <= t)continue;//if the agents path is shorter than t there cant be a collision so go to next agent
                 if (positionsAtTimestep.ContainsKey(agentPath[t].position))
                 {
@@ -209,10 +204,10 @@ public class ConflictTreeNode
                     //Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position +""+agentPath[t+1].position + "time " + (t));
                     return new Collision(agents, agentPath[t], agentPath[t+1], t);
                 }
-                
-                edgesAtTimestep.Add(agentPath[t].position + "" + agentPath[t + 1].position, agent);
-                if(agentPath[t].position!= agentPath[t + 1].position)
+               
+                if(!agentPath[t].position.Equals(agentPath[t + 1].position)) //only add an edge if the agent is travelling to a different node
                 {
+                    edgesAtTimestep.Add(agentPath[t].position + "" + agentPath[t + 1].position, agent);
                     edgesAtTimestep.Add(agentPath[t + 1].position + "" + agentPath[t].position, agent); //reserve edge in opposite direction too
                 }
                 
@@ -224,7 +219,7 @@ public class ConflictTreeNode
     public void CalculateNodeCost()
     {
         if (nodeCost == -1) return;
-        foreach(List<MAPFNode> path in solution.Values)
+        foreach(List<MapNode> path in solution.Values)
         {
             nodeCost += path.Count-1;
         }
@@ -236,19 +231,19 @@ public class ConflictTreeNode
 public class Collision
 {
     public MAPFAgent[] agents;
-    public MAPFNode node;
-    public MAPFNode node2;
+    public MapNode node;
+    public MapNode node2;
     public int timestep;
     public bool isVertex;
 
-    public Collision(MAPFAgent[] agents, MAPFNode node, int timestep)
+    public Collision(MAPFAgent[] agents, MapNode node, int timestep)
     {
         this.agents = agents;
         this.node = node;
         this.timestep = timestep;
         isVertex = true;
     }
-    public Collision(MAPFAgent[] agents, MAPFNode node, MAPFNode node2, int timestep)
+    public Collision(MAPFAgent[] agents, MapNode node, MapNode node2, int timestep)
     {
         this.agents = agents;
         this.node = node;
@@ -261,19 +256,19 @@ public class Collision
 public class Constraint
 {
     public MAPFAgent agent;
-    public MAPFNode node;
-    public MAPFNode node2;
+    public MapNode node;
+    public MapNode node2;
     public int timestep;
     public bool isVertex;
 
-    public Constraint(MAPFAgent agent, MAPFNode node, int timestep)
+    public Constraint(MAPFAgent agent, MapNode node, int timestep)
     {
         this.agent = agent;
         this.node = node;
         this.timestep = timestep;
         isVertex = true;
     }
-    public Constraint(MAPFAgent agent, MAPFNode node, MAPFNode node2, int timestep) //edge constraint constructor
+    public Constraint(MAPFAgent agent, MapNode node, MapNode node2, int timestep) //edge constraint constructor
     {
         this.agent = agent;
         this.node = node;
@@ -282,7 +277,17 @@ public class Constraint
         isVertex = false;
     }
 
+    public override string ToString()
+    {
+        if (isVertex)
+        {
+            return node + "" + timestep;
+        }
+        return node + "" + node2 + "" + timestep;
+    }
+
 }
+
 
 
 

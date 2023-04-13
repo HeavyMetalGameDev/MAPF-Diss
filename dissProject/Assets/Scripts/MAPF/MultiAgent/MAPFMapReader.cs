@@ -29,24 +29,24 @@ public class MAPFMapReader
         return new Vector2(_map[0].Length, _map.Count);
     }
 
-    public List<List<MAPFNode>> GetNodesFromMap()
+    public List<List<MapNode>> GetNodesFromMap()
     {
-        List<List<MAPFNode>> nodes = new List<List<MAPFNode>>();
-        MAPFNode newNode;
+        List<List<MapNode>> nodes = new List<List<MapNode>>();
+        MapNode newNode;
         for (int y = 0; y < _map.Count; y++)
         {
-            List<MAPFNode> subNodes = new List<MAPFNode>();
+            List<MapNode> subNodes = new List<MapNode>();
             for (int x = 0; x < _map[y].Length; x++)
             {
                 char nodeChar = _map[y][x];
                 if (nodeChar.Equals('.'))
                 {
-                    newNode = new MAPFNode(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
+                    newNode = new MapNode(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
                     subNodes.Add(newNode);
                 }
                 else if (nodeChar.Equals('@') || nodeChar.Equals('T'))
                 {
-                    newNode = new MAPFNode(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
+                    newNode = new MapNode(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
                     subNodes.Add(newNode);
                 }
             }

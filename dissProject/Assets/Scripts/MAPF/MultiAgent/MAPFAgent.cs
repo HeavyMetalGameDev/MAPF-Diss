@@ -8,14 +8,14 @@ public class MAPFAgent : MonoBehaviour
     float timer = 0;
     [SerializeField] GameObject _pathmarkerPrefab;
     [SerializeField] GameObject _completemarkerPrefab;
-    public MAPFNode destinationNode;
-    public MAPFNode currentNode;
-    public MAPFNode nextNode;
-    public List<MAPFNode> path;
+    public MapNode destinationNode;
+    public MapNode currentNode;
+    public MapNode nextNode;
+    public List<MapNode> path;
     public int timesteps;
     Vector3 _nextVector;
 
-    public void SetPath(List<MAPFNode> path)
+    public void SetPath(List<MapNode> path)
     {
         if (path == null) return;
         if (path.Count == 0) return;
@@ -29,13 +29,13 @@ public class MAPFAgent : MonoBehaviour
         }
         */
     }
-    public void SetDestination(MAPFNode node)
+    public void SetDestination(MapNode node)
     {
         destinationNode = node;
         node.isTargeted = true;
         
     }
-    public void SetCurrent(MAPFNode node)
+    public void SetCurrent(MapNode node)
     {
         currentNode = node;
         //Debug.Log("CURRENT NODE SET");
