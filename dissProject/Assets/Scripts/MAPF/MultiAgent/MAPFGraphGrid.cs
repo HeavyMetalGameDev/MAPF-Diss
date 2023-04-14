@@ -16,7 +16,9 @@ public class MAPFGraphGrid : MonoBehaviour
     public static RefreshGrid refreshGrid;
     Dictionary<Vector2, MapNode> _nodeDict = new Dictionary<Vector2, MapNode>();
     List<List<MapNode>> _gridGraph = new List<List<MapNode>>();
+    public Dictionary<int, RRAStar> agentRRAStarDict = new();
     MAPFMapReader _mapReader = new MAPFMapReader();
+    Stopwatch _sw = new Stopwatch();
     [SerializeField] string _mapName;
 
     [SerializeField] int _agentCount;
@@ -45,9 +47,10 @@ public class MAPFGraphGrid : MonoBehaviour
         CreateRandomAgents(_agentCount);
         //SetupAgents();
         RandomDestinationAllAgents();
+        SetupRRAStar();
         //AStarAllAgents();
         CBSAllAgents();
-        //STAStarAllAgents();
+        //CoopAStarAllAgents();
         //CreateAllRenderEdges();
     }
     private void OnGridRefresh(MapNode node)
@@ -102,6 +105,13 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         _stAStar = new STAStar();
         _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
+    }
+    private void SetupRRAStar()
+    {
+        foreach (MAPFAgent agent in _MAPFAgents) //setup RRA star for each agent since the calculated heuristics can be reused in each Conflict Node low level
+        {
+            agentRRAStarDict.Add(agent.agentId, new RRAStar(agent.destinationNode, _gridGraph, _mapDimensions));
+        }
     }
     private void NewDestinationAgent(MAPFAgent agent)
     {
@@ -179,25 +189,34 @@ public class MAPFGraphGrid : MonoBehaviour
         _MAPFAgents = agentsList.ToArray();
     }
 
-    private void STAStarAllAgents()
+    private void CoopAStarAllAgents()
     {
         _stAStar = new STAStar();
-        foreach(MAPFAgent agent in _MAPFAgents)
+        _sw.Start();
+        foreach (MAPFAgent agent in _MAPFAgents)
         {
-            _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
-            agent.SetPath(_stAStar.GetSTAStarPath(agent));
+            _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
+            agent.SetPath(_stAStar.GetSTAStarPath(agent,true));
         }
-        
-        
+        _sw.Stop();
+        UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
+
+
     }
     private void AStarAllAgents()
     {
         _stAStar = new STAStar();
+        _sw.Start();
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
+            
             agent.SetPath(_stAStar.GetSingleAgentPath(agent));
         }
+        _sw.Stop();
+        UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
+
+
     }
 
     private void OnAgentArrived(MAPFAgent agent)
@@ -215,6 +234,7 @@ public class MAPFGraphGrid : MonoBehaviour
     private void CBSAllAgents()
     {
         _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions);
+        _cbsManager.agentRRAStarDict = agentRRAStarDict;
         Dictionary<MAPFAgent, List<MapNode>> solution = _cbsManager.Plan();
         if (solution == null)
         {

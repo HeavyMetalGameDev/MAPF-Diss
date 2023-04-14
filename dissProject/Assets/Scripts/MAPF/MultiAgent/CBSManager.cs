@@ -8,13 +8,14 @@ public class CBSManager
     public MAPFAgent[] _MAPFAgents;
     public Vector2 dimensions;
     public SimplePriorityQueue<ConflictTreeNode> _openList = new SimplePriorityQueue<ConflictTreeNode>();
+    public Dictionary<int, RRAStar> agentRRAStarDict = new Dictionary<int, RRAStar>();
 
     public Dictionary<MAPFAgent, List<MapNode>> Plan()
     {
         int expansions = 0;
         ConflictTreeNode rootNode = new ConflictTreeNode();
         rootNode.SetupSolution(_MAPFAgents);
-        rootNode.CalculateNodePaths(_gridGraph, dimensions);
+        rootNode.CalculateNodePaths(_gridGraph, dimensions, agentRRAStarDict);
         rootNode.CalculateNodeCost();
         _openList.Enqueue(rootNode, rootNode.nodeCost);
         while (_openList.Count != 0)
@@ -49,7 +50,7 @@ public class CBSManager
                 //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                 newNode.parent = workingNode;
                 newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
-                newNode.CalculatePathForAgent(_gridGraph,dimensions,agent);
+                newNode.CalculatePathForAgent(_gridGraph,dimensions,agent,agentRRAStarDict[agent.agentId]);
                 newNode.CalculateNodeCost();
                 if (newNode.nodeCost != -1) // if a path has been found for all agents
                 {
@@ -68,8 +69,6 @@ public class CBSManager
         _MAPFAgents = MAPFAgents;
         this.dimensions = dimensions;
     }
-    
-    
 }
 
 
@@ -93,12 +92,12 @@ public class ConflictTreeNode
             solution.Add(agent, new List<MapNode>());
         }
     }
-    public void CalculateNodePaths(List<List<MapNode>> _gridGraph, Vector2 dimensions)
+    public void CalculateNodePaths(List<List<MapNode>> _gridGraph, Vector2 dimensions, Dictionary<int, RRAStar> rraStarDict)
     {
         
         List<MAPFAgent> solutionAgents = new List<MAPFAgent>(solution.Keys);
-        Hashtable agentConstraints;
-        Hashtable agentEdgeConstraints;
+        Dictionary<string, MAPFAgent> agentConstraints;
+        Dictionary<string, MAPFAgent> agentEdgeConstraints;
         
         foreach (MAPFAgent agent in solutionAgents)
         {
@@ -122,11 +121,11 @@ public class ConflictTreeNode
                 }
             }
             STAStar sTAStar = new STAStar();
-            sTAStar.SetSTAStar(_gridGraph, dimensions);
+            sTAStar.SetSTAStar(_gridGraph, dimensions, rraStarDict[agent.agentId]);
             sTAStar.rTable = agentConstraints;
             sTAStar.edgeTable = agentEdgeConstraints;
-            List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent);
-            if(agentPath== null) //if we failed to find a path for an agent, exit out
+            List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false);
+            if (agentPath== null) //if we failed to find a path for an agent, exit out
             {
                 
                 nodeCost = -1;
@@ -138,10 +137,10 @@ public class ConflictTreeNode
         //Paths found successfully!
     }
 
-    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2 dimensions, MAPFAgent agent)
+    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2 dimensions, MAPFAgent agent, RRAStar rraStar)
     {
-        Hashtable agentConstraints;
-        Hashtable agentEdgeConstraints;
+        Dictionary<string, MAPFAgent> agentConstraints;
+        Dictionary<string, MAPFAgent> agentEdgeConstraints;
         agentConstraints = new();
         agentEdgeConstraints = new();
         foreach (Constraint constraint in constraints)
@@ -149,7 +148,7 @@ public class ConflictTreeNode
 
             if (constraint.agent.agentId == agent.agentId)
             {
-
+                //error here
                 if (constraint.isVertex)
                 {
                     agentConstraints.Add(constraint.node.position + "" + constraint.timestep, agent);
@@ -157,15 +156,16 @@ public class ConflictTreeNode
                 else
                 {
                     agentEdgeConstraints.Add(constraint.node.position + "" + constraint.node2.position + constraint.timestep, agent);
+                    agentEdgeConstraints.Add(constraint.node2.position + "" + constraint.node.position + constraint.timestep, agent);
                 }
 
             }
         }
         STAStar sTAStar = new STAStar();
-        sTAStar.SetSTAStar(_gridGraph, dimensions);
+        sTAStar.SetSTAStar(_gridGraph, dimensions,rraStar);
         sTAStar.rTable = agentConstraints;
         sTAStar.edgeTable = agentEdgeConstraints;
-        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent);
+        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {
             nodeCost = -1;
