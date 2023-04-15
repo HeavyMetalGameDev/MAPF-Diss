@@ -10,7 +10,7 @@ public class MAPFGraphGrid : MonoBehaviour
     //[SerializeField] List<MAPFNode> _nodes;
     [SerializeField] GameObject _agentPrefab;
     [SerializeField] GameObject _nodePrefab;
-    [SerializeField] MAPFAgent[] _MAPFAgents;
+    [SerializeField] List<MAPFAgent> _MAPFAgents;
     [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
@@ -48,7 +48,7 @@ public class MAPFGraphGrid : MonoBehaviour
         RandomDestinationAllAgents();
         SetupRRAStar();
         //AStarAllAgents();
-        CBSAllAgents();
+        CBSAllAgents(true);
         //CoopAStarAllAgents();
         //CreateAllRenderEdges();
         SolutionChecker();
@@ -181,18 +181,45 @@ public class MAPFGraphGrid : MonoBehaviour
             agentsList.Add(agent);
 
         }
-        _MAPFAgents = agentsList.ToArray();
+        _MAPFAgents = agentsList;
     }
 
     private void CoopAStarAllAgents()
     {
-        _stAStar = new STAStar();
+        
         _sw.Start();
-        foreach (MAPFAgent agent in _MAPFAgents)
+        bool isValid = false;
+        int iterationsAllowed = 20;
+        while (!isValid)
         {
-            _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
-            agent.SetPath(_stAStar.GetSTAStarPath(agent,true));
+            _stAStar = new STAStar();
+            iterationsAllowed--;
+            if (iterationsAllowed <= 0)
+            {
+                break;
+            }
+            foreach (MAPFAgent agent in _MAPFAgents)
+            {
+                isValid = false;
+                _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
+                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true);
+                if (newPath == null)
+                {
+                    UnityEngine.Debug.Log("REPLAN");
+                    _MAPFAgents.Remove(agent);
+                    _MAPFAgents.Insert(0, agent); //increase an agents priority then replan
+                    break;
+                }
+                else
+                {
+                    
+                    isValid = true;
+                }
+                agent.SetPath(newPath);
+
+            }
         }
+
         _sw.Stop();
         UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
 
@@ -205,7 +232,6 @@ public class MAPFGraphGrid : MonoBehaviour
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
-            
             agent.SetPath(_stAStar.GetSingleAgentPath(agent));
         }
         _sw.Stop();
@@ -226,10 +252,10 @@ public class MAPFGraphGrid : MonoBehaviour
         agent.SetPath(_stAStar.GetSTAStarPath(agent));*/
     }
     
-    private void CBSAllAgents()
+    private void CBSAllAgents(bool disjoint)
     {
         _sw.Start();
-        _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions,false);
+        _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions,disjoint);
         _cbsManager.agentRRAStarDict = agentRRAStarDict;
         Dictionary<MAPFAgent, List<MapNode>> solution = _cbsManager.Plan();
         if (solution == null)

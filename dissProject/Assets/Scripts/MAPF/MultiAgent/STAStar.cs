@@ -110,7 +110,8 @@ public class STAStar
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
-                /*if (pathPadding > 0)
+                /*openList = new();
+                if (pathPadding > 0)
                 {
                     pathPadding--;
                     ProcessAdjacentNodes();
