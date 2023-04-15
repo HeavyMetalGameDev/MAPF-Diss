@@ -15,10 +15,12 @@ public class STAStar
     public Dictionary<string, MAPFAgent> edgeTable = new Dictionary<string, MAPFAgent>(); //reservation table for edge traversal
     public int startingTimestep=0;
     RRAStar rraStar;
+    UnityEngine.Object marker;
     Stopwatch _sw = new Stopwatch();
+    int iterator;
     public STAStar()
     {
-
+        marker = Resources.Load("expanded marker");
     }
     public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions, RRAStar rraStar)
     {
@@ -30,6 +32,7 @@ public class STAStar
     {
         _graph = Graph;
         dimensions = Dimensions;
+        marker = Resources.Load("expanded marker");
     }
 
     public List<MapNode> GetSingleAgentPath(MAPFAgent agent)
@@ -57,16 +60,16 @@ public class STAStar
                 path.Add(agent.currentNode);
                 path.Reverse();
 
-
+                //UnityEngine.Debug.Log("OPEN: " + openList.Count);
+                //UnityEngine.Debug.Log("CLOSED: " + closedList.Count);
                 return path;
             }
             closedList.Add(workingNode.node.position, workingNode);
-            
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
             {
                 if (!closedList.ContainsKey(adjNode.position))
                 {
-                    MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, CalculateManhattan(adjNode, agent.destinationNode), 0, workingNode);
+                    MAPFNode newNode = new MAPFNode(adjNode, workingNode.g+5, CalculateManhattan(adjNode, agent.destinationNode), 0, workingNode);
                     bool found = false;
                     foreach(MAPFNode node in openList)
                     {
@@ -107,12 +110,12 @@ public class STAStar
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
-                if (pathPadding > 0)
+                /*if (pathPadding > 0)
                 {
                     pathPadding--;
                     ProcessAdjacentNodes();
                     continue;
-                }
+                }*/
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
                 {
@@ -139,11 +142,15 @@ public class STAStar
                 }
                 path.Add(agent.currentNode);
                 path.Reverse();
-                //UnityEngine.Debug.Log(openList.Count);
-                //UnityEngine.Debug.Log(closedList.Count);
+                //UnityEngine.Debug.Log("OPEN: " + openList.Count);
+                //UnityEngine.Debug.Log("CLOSED: " + closedList.Count);
                 return path;
             }
             closedList.Add((workingNode.node.position, workingNode.time), workingNode);
+
+            /*ExpandedNodeDelay xND = ((GameObject)GameObject.Instantiate(marker, new Vector3(workingNode.node.position.x, .4f, workingNode.node.position.y), Quaternion.identity)).GetComponent<ExpandedNodeDelay>();
+            iterator++;
+            xND.order = iterator;*/
             ProcessAdjacentNodes();
         }
         //UnityEngine.Debug.Log("NO PATH FOUND");
@@ -247,4 +254,5 @@ public class STAStar
 
         return adjacentNodes;
     }
+
 }
