@@ -97,18 +97,25 @@ public class STAStar
         List<MapNode> path = new List<MapNode>();
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
         Dictionary<(Vector2,int),MAPFNode> closedList = new Dictionary<(Vector2, int), MAPFNode>();
-        
+        Dictionary<(Vector2, int), MAPFNode> openListDict = new Dictionary<(Vector2, int), MAPFNode>();
+
         MAPFNode workingNode;
         openList.Enqueue(source, source.GetCost());
+        int pathPadding = 20;
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
+                if (pathPadding > 0)
+                {
+                    pathPadding--;
+                    ProcessAdjacentNodes();
+                    continue;
+                }
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
                 {
-
                     //Debug.Log(workingNode + " - " + workingNode.parent);
                     path.Add(workingNode.node);
 
@@ -127,7 +134,7 @@ public class STAStar
                     {
                         workingNode = workingNode.parent;
                     }
-                    
+
 
                 }
                 path.Add(agent.currentNode);
@@ -136,18 +143,27 @@ public class STAStar
                 //UnityEngine.Debug.Log(closedList.Count);
                 return path;
             }
-            closedList.Add((workingNode.node.position, workingNode.time),workingNode);
+            closedList.Add((workingNode.node.position, workingNode.time), workingNode);
+            ProcessAdjacentNodes();
+        }
+        //UnityEngine.Debug.Log("NO PATH FOUND");
+        path = null;
+        return path;
+
+        void ProcessAdjacentNodes()
+        {
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
             {
                 MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, rraStar.GetNodeHeuristic(adjNode), workingNode.time + 1, workingNode);
-                if (closedList.ContainsKey((adjNode.position, workingNode.time+1)))
+                if (closedList.ContainsKey((adjNode.position, workingNode.time + 1)))
                 {
-                    closedList.TryGetValue((adjNode.position, workingNode.time+1), out MAPFNode closedListNode);
+                    closedList.TryGetValue((adjNode.position, workingNode.time + 1), out MAPFNode closedListNode);
                     if (closedListNode.GetCost() > newNode.GetCost())
                     {
-                        
+
                         closedList[(adjNode.position, newNode.time)] = newNode;
                         openList.Enqueue(newNode, newNode.GetCost());
+                        openListDict.Add((newNode.node.position, newNode.time), newNode);
                     }
                     continue;
                 }
@@ -162,26 +178,14 @@ public class STAStar
                     continue;
                 }
 
-                bool found = false;
-                foreach (MAPFNode node in openList)
-                {
-                    if (node.PositionIsEqualTo(newNode.node))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
+                if (!openListDict.ContainsKey((newNode.node.position, newNode.time)))
                 {
                     openList.Enqueue(newNode, newNode.GetCost());
+                    openListDict.Add((newNode.node.position, newNode.time), newNode);
                 }
 
             }
         }
-        //UnityEngine.Debug.Log("NO PATH FOUND");
-        path = null;
-        return path;
-
     }
     public int CalculateManhattan(MapNode start, MapNode end)
     {

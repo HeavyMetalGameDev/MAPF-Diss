@@ -49,8 +49,8 @@ public class MAPFGraphGrid : MonoBehaviour
         RandomDestinationAllAgents();
         SetupRRAStar();
         //AStarAllAgents();
-        CBSAllAgents();
-        //CoopAStarAllAgents();
+        //CBSAllAgents();
+        CoopAStarAllAgents();
         //CreateAllRenderEdges();
     }
     private void OnGridRefresh(MapNode node)
@@ -100,11 +100,6 @@ public class MAPFGraphGrid : MonoBehaviour
             }
 
         }
-    }
-    private void CreateSTAStar()
-    {
-        _stAStar = new STAStar();
-        _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
     }
     private void SetupRRAStar()
     {
