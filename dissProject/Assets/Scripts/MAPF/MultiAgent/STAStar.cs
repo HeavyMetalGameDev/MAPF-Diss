@@ -98,7 +98,7 @@ public class STAStar
         return null;
     }
 
-    public List<MapNode> GetSTAStarPath(MAPFAgent agent, bool shouldReservePath)
+    public List<MapNode> GetSTAStarPath(MAPFAgent agent, bool shouldReservePath, bool useImprovedHeuristic)
     {
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, startingTimestep, null);
         List<MapNode> path = new List<MapNode>();
@@ -183,7 +183,17 @@ public class STAStar
         {
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
             {
-                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, rraStar.GetNodeHeuristic(adjNode), workingNode.time + 1, workingNode);
+                int nodeHValue;
+                if (useImprovedHeuristic)
+                {
+                    nodeHValue = rraStar.GetNodeHeuristic(adjNode);
+                }
+                else
+                {
+                    nodeHValue = CalculateManhattan(adjNode, agent.destinationNode);
+                }
+                 
+                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, nodeHValue, workingNode.time + 1, workingNode);
                 if (closedList.ContainsKey((adjNode.position, workingNode.time + 1)))
                 {
                     closedList.TryGetValue((adjNode.position, workingNode.time + 1), out MAPFNode closedListNode);

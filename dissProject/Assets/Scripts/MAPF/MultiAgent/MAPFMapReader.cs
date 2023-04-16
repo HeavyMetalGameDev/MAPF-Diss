@@ -6,26 +6,15 @@ using UnityEngine;
 public class MAPFMapReader
 {
     string _mapFileName;
-    int _readIgnoreCounter = 4;
     List<string> _map = new List<string>();
     public Vector2 ReadMapFromFile(string fileName)
     {
         _mapFileName = fileName;
-        using (StreamReader reader = new StreamReader(_mapFileName))
-        {
-            string row;
-            while ((row = reader.ReadLine()) != null)
-            {
-                if (_readIgnoreCounter > 0)
-                {
-                    _readIgnoreCounter--;
-                    continue;
-                }
-                _map.Add(row);
-            }
-            _map.Reverse();
-
-        }
+        var loadedMap = (TextAsset)Resources.Load("BenchmarkMaps/" + fileName);
+        _map = new List<string>(loadedMap.text.Split("\n"));
+        _map.RemoveRange(0, 4);
+        _map.Reverse();
+        _map.RemoveAt(0);
         return new Vector2(_map[0].Length, _map.Count);
     }
 

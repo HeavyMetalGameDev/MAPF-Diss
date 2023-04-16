@@ -20,8 +20,16 @@ public class CBSManager
         _openList.Enqueue(rootNode, rootNode.nodeCost);
         while (_openList.Count != 0)
         {
-            if (expansions >= 5000) return null;
             ConflictTreeNode workingNode = _openList.Dequeue();
+            if (expansions >= 50000)
+            {
+                Debug.Log(workingNode.constraints.Count);
+                foreach(Constraint constraint in workingNode.constraints)
+                {
+                    Debug.Log(constraint);
+                }
+                return null;
+            }
             Collision firstCollision = workingNode.VerifyPaths();
             //Debug.Log("PROCESSING NODE " + workingNode.nodeID);
             if (firstCollision == null)
@@ -95,14 +103,14 @@ public class CBSManager
                     //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                     newNode.parent = workingNode;
                     newNode.maxPathLength = workingNode.maxPathLength;
-                    newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
+                    newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution); //copy solution dict
                     if (!disjointToggle)
                     {
-                        newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId],true);
+                        newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId],true); //we only need to replan this agent
                     }
                     else
                     {
-                        newNode.CalculateAllAgentPaths(_gridGraph, dimensions,agentRRAStarDict,true);
+                        newNode.CalculateAllAgentPaths(_gridGraph, dimensions,agentRRAStarDict,true); //we may need to replan all agents to avoid the new collision
                     }
                     
                     newNode.CalculateNodeCost();
@@ -136,6 +144,7 @@ public class ConflictTreeNode
     public HashSet<Constraint> constraints = new();
     public int nodeCost;
     public int maxPathLength;
+    public int numberOfCollisions;
     public Dictionary<MAPFAgent, List<MapNode>> solution; //a dictionary assigning one path to one agent
 
     public Dictionary<MAPFAgent, List<MapNode>> GetSolution()
@@ -203,7 +212,7 @@ public class ConflictTreeNode
         sTAStar.edgeTable = agentEdgeConstraints;
         sTAStar.positiveConstraints = agentPositiveConstraints;
         sTAStar.positiveEdgeConstraints = agentPositiveEdgeConstraints;
-        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false);
+        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false,true);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {
             Debug.Log("NO PATH");
@@ -219,6 +228,7 @@ public class ConflictTreeNode
     {
         Dictionary<(Vector2,int), MAPFAgent> positionsTimestep = new(); //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
         Dictionary<(Vector2,Vector2,int),MAPFAgent> edgesTimestep = new();
+        List<Collision> collisions = new(0);
         for (int t=0; t <= maxPathLength; t++)
         {
             //Debug.Log("MAX " +maxPathLength);
@@ -235,37 +245,47 @@ public class ConflictTreeNode
                 {
                     MAPFAgent[] agents = { agent, positionsTimestep[(agentPath[t].position,t)] };
                     //Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position +" time " + (t));
-                    return new Collision(agents, agentPath[t], t);
+                    collisions.Add(new Collision(agents, agentPath[t], t));
                 }
-                positionsTimestep.Add((agentPath[t].position, t), agent);
+                positionsTimestep.TryAdd((agentPath[t].position, t), agent);
                 //Debug.Log("ADDED " + agentPath[t].position + agent.agentId);
                 if (agentPath.Count <= t+1) continue; //if there isnt a node at the next timestep continue
                 if (edgesTimestep.ContainsKey((agentPath[t].position,agentPath[t+1].position,t)))
                 {
                     MAPFAgent[] agents = { agent, edgesTimestep[(agentPath[t].position,agentPath[t+1].position,t)] };
                     //Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position +""+agentPath[t+1].position + "time " + (t));
-                    return new Collision(agents, agentPath[t], agentPath[t+1], t);
+                    collisions.Add( new Collision(agents, agentPath[t], agentPath[t+1], t));
                 }
                
                 if(!agentPath[t].position.Equals(agentPath[t + 1].position)) //only add an edge if the agent is travelling to a different node
                 {
-                    edgesTimestep.Add((agentPath[t].position,agentPath[t + 1].position,t), agent);
-                    edgesTimestep.Add((agentPath[t + 1].position,agentPath[t].position,t), agent); //reserve edge in opposite direction too
+                    edgesTimestep.TryAdd((agentPath[t].position,agentPath[t + 1].position,t), agent);
+                    edgesTimestep.TryAdd((agentPath[t + 1].position,agentPath[t].position,t), agent); //reserve edge in opposite direction too
                 }
                 
             }
             
 
         }
-        return null;
+        numberOfCollisions = collisions.Count;
+        if(numberOfCollisions == 0)
+        {
+            return null;
+        }
+        else
+        {
+            return collisions[0];
+        }
+        
     }
-    public void CalculateNodeCost()
+    public void CalculateNodeCost() //sum of costs value
     {
         if (nodeCost == -1) return;
         foreach(List<MapNode> path in solution.Values)
         {
             nodeCost += path.Count-1;
         }
+        //nodeCost = numberOfCollisions; //suboptimal version of CBS that will prioritise low collisions over path cost
     }
 
 

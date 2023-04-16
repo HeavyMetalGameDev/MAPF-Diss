@@ -50,7 +50,6 @@ public class MAPFAgent : MonoBehaviour
         if (path.Count == 0) //if path is now empty
         {
             Instantiate(_completemarkerPrefab, new Vector3(transform.position.x, 0, transform.position.z), Quaternion.identity);
-            MAPFGraphGrid.agentArrived(this);
             destinationNode.isTargeted = false;
             return;
         }

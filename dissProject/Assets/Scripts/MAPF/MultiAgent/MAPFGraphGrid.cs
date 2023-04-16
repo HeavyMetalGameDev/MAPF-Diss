@@ -13,16 +13,16 @@ public class MAPFGraphGrid : MonoBehaviour
     [SerializeField] GameObject _camera;
     [SerializeField] List<MAPFAgent> _MAPFAgents;
     [SerializeField] Material _defaultMaterial;
-    public delegate void RefreshGrid(Node node);
-    public static RefreshGrid refreshGrid;
     Dictionary<Vector2, MapNode> _nodeDict = new Dictionary<Vector2, MapNode>();
     List<List<MapNode>> _gridGraph = new List<List<MapNode>>();
     public Dictionary<int, RRAStar> agentRRAStarDict = new();
     MAPFMapReader _mapReader = new MAPFMapReader();
     Stopwatch _sw = new Stopwatch();
-    [SerializeField] string _mapName;
 
-    [SerializeField] int _agentCount;
+    [SerializeField] public string _mapName;
+    [SerializeField] public int _agentCount;
+    public string algorithmToUse;
+
     STAStar _stAStar;
     CBSManager _cbsManager;
 
@@ -31,51 +31,36 @@ public class MAPFGraphGrid : MonoBehaviour
 
     Vector2 _mapDimensions;
 
-    private void OnEnable()
-    {
-        agentArrived += OnAgentArrived;
-    }
-    private void OnDisable()
-    {
-        agentArrived -= OnAgentArrived;
-    }
-    private void Start()
+    public void Execute()
     {
         GetDataFromMapReader();
-        //GetNodesInChildren();
         AddNodesToGraph();
         CombineMapMeshes();
         CreateRandomAgents(_agentCount);
-        //SetupAgents();
         RandomDestinationAllAgents();
         SetupRRAStar();
-        //AStarAllAgents();
-        //CBSAllAgents(false);
-        CoopAStarAllAgents();
-        //CreateAllRenderEdges();
+        UnityEngine.Debug.Log(algorithmToUse + " with " + _agentCount + " agents on " + _mapName);
+        switch (algorithmToUse)
+        {
+            case "A*":
+                AStarAllAgents();
+                break;
+            case "CA*":
+                CoopAStarAllAgents(false);
+                break;
+            case "HCA*":
+                CoopAStarAllAgents(true);
+                break;
+            case "CBS":
+                CBSAllAgents(false);
+                break;
+            case "CBS with Disjoint Splitting":
+                CBSAllAgents(true);
+                break;
+        }
+        
         SolutionChecker();
     }
-    private void OnGridRefresh(MapNode node)
-    {
-        if (node.nodeType.Equals(NodeTypeEnum.NOT_WALKABLE))
-        {
-            RemoveNodeAndEdges(node);
-        }
-        else if (node.nodeType.Equals(NodeTypeEnum.WALKABLE))
-        {
-            //TODO
-            _nodeDict[node.position] = node;
-            node._nodeMarker.ToggleMarker(true);
-        }
-    }
-
-    private void RemoveNodeAndEdges(MapNode node)
-    {
-        ///TODO
-        _nodeDict[node.position] = node;
-        node._nodeMarker.ToggleMarker(false);
-    }
-
     private void GetDataFromMapReader()
     {
         _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
@@ -189,7 +174,7 @@ public class MAPFGraphGrid : MonoBehaviour
         _MAPFAgents = agentsList;
     }
 
-    private void CoopAStarAllAgents()
+    private void CoopAStarAllAgents(bool useImprovedHeuristic)
     {
         
         _sw.Start();
@@ -207,7 +192,7 @@ public class MAPFGraphGrid : MonoBehaviour
             {
                 isValid = false;
                 _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId],false);
-                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true);
+                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic);
                 if (newPath == null)
                 {
                     UnityEngine.Debug.Log("REPLAN");
@@ -245,18 +230,6 @@ public class MAPFGraphGrid : MonoBehaviour
 
     }
 
-    private void OnAgentArrived(MAPFAgent agent)
-    {
-
-        NewDestinationAgent(agent);
-        //CBSAllAgents();
-        /*_gridGraphCopy = _gridGraph;
-
-        _stAStar.SetSTAStar(_gridGraphCopy, _mapDimensions);
-        _stAStar.startingTimestep = agent.timesteps;
-        agent.SetPath(_stAStar.GetSTAStarPath(agent));*/
-    }
-    
     private void CBSAllAgents(bool disjoint)
     {
         _sw.Start();
