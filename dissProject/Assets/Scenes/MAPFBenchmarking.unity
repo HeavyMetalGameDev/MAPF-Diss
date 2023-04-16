@@ -256,8 +256,8 @@ MonoBehaviour:
   _camera: {fileID: 107405108}
   _MAPFAgents: []
   _defaultMaterial: {fileID: 0}
-  _mapName: Assets/BenchmarkMaps/CBSTest.map
-  _agentCount: 10
+  _mapName: Assets/BenchmarkMaps/empty32x32.map
+  _agentCount: 20
 --- !u!1 &296800104
 GameObject:
   m_ObjectHideFlags: 0

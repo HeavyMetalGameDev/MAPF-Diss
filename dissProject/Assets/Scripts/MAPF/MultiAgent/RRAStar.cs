@@ -11,6 +11,7 @@ public class RRAStar
     MAPFNode source;
     SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
     public Dictionary<Vector2, MAPFNode> closedList = new Dictionary<Vector2, MAPFNode>();
+    public Dictionary<Vector2, MAPFNode> openListDict = new Dictionary<Vector2, MAPFNode>();
     MAPFNode workingNode;
     public RRAStar(MapNode destinationNode, List<List<MapNode>> graph, Vector2 dimensions)
     {
@@ -35,18 +36,17 @@ public class RRAStar
                 if (!closedList.ContainsKey(adjNode.position))
                 {
                     MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, CalculateManhattan(adjNode, targetNode), 0, workingNode);
-                    bool found = false;
-                    foreach (MAPFNode node in openList)
-                    {
-                        if (node.PositionIsEqualTo(newNode.node))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
+                    if (!openListDict.ContainsKey(adjNode.position))
                     {
                         openList.Enqueue(newNode, newNode.GetCost());
+                        openListDict.Add(newNode.node.position, newNode);
+                    }
+                    else
+                    {
+                        if(openListDict[adjNode.position].GetCost() < newNode.GetCost())
+                        {
+                            openListDict[adjNode.position] = newNode;
+                        }
                     }
                 }
             }

@@ -215,10 +215,11 @@ public class STAStar
                 }
                 else
                 {
-                    if(openListDict[(newNode.node.position, newNode.time)].g> newNode.g) //update path to the node if a better one is found
+                    if(openListDict[(newNode.node.position, newNode.time)].GetCost()> newNode.GetCost()) //update path to the node if a better one is found
                     {
                         openListDict[(newNode.node.position, newNode.time)].g = newNode.g;
                         openListDict[(newNode.node.position, newNode.time)].parent = workingNode;
+                        openListDict[(newNode.node.position, newNode.time)] = newNode;
                     }
                     
                 }

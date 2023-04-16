@@ -23,7 +23,7 @@ public class CBSManager
             if (expansions >= 5000) return null;
             ConflictTreeNode workingNode = _openList.Dequeue();
             Collision firstCollision = workingNode.VerifyPaths();
-            Debug.Log("PROCESSING NODE " + workingNode.nodeID);
+            //Debug.Log("PROCESSING NODE " + workingNode.nodeID);
             if (firstCollision == null)
             {
                 Debug.Log("RETURNING NODE " + workingNode.nodeID);
