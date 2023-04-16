@@ -44,13 +44,14 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         //GetNodesInChildren();
         AddNodesToGraph();
+        CombineMapMeshes();
         CreateRandomAgents(_agentCount);
         //SetupAgents();
         RandomDestinationAllAgents();
         SetupRRAStar();
         //AStarAllAgents();
-        CBSAllAgents(true);
-        //CoopAStarAllAgents();
+        //CBSAllAgents(false);
+        CoopAStarAllAgents();
         //CreateAllRenderEdges();
         SolutionChecker();
     }
@@ -80,7 +81,7 @@ public class MAPFGraphGrid : MonoBehaviour
         _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
         _gridGraph = _mapReader.GetNodesFromMap();
 
-        _camera.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 2.5f, -20);
+        _camera.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 2.5f, -_mapDimensions.y * 2.5f);
         _camera.transform.LookAt(new Vector3(_mapDimensions.x * 2.5f, 0, _mapDimensions.y * 2.5f));
     }
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
@@ -326,4 +327,26 @@ public class MAPFGraphGrid : MonoBehaviour
 
         }
     }
+    private void CombineMapMeshes()
+    {
+        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+
+        int i = 0;
+        while (i < meshFilters.Length)
+        {
+            combine[i].mesh = meshFilters[i].sharedMesh;
+            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+            meshFilters[i].gameObject.SetActive(false);
+
+            i++;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        mesh.CombineMeshes(combine);
+        transform.GetComponent<MeshFilter>().sharedMesh = mesh;
+        transform.gameObject.SetActive(true);
+    }
+
 }
