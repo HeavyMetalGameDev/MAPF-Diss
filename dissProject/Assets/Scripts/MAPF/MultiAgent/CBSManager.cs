@@ -20,7 +20,7 @@ public class CBSManager
         _openList.Enqueue(rootNode, rootNode.nodeCost);
         while (_openList.Count != 0)
         {
-            if (expansions >= 500) return null;
+            if (expansions >= 5000) return null;
             ConflictTreeNode workingNode = _openList.Dequeue();
             Collision firstCollision = workingNode.VerifyPaths();
             if(firstCollision == null)
@@ -153,10 +153,12 @@ public class ConflictTreeNode
 
     public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2 dimensions, MAPFAgent agent, RRAStar rraStar)
     {
-        Dictionary<string, MAPFAgent> agentConstraints;
-        Dictionary<string, MAPFAgent> agentEdgeConstraints;
+        Dictionary<(Vector2,int), MAPFAgent> agentConstraints;
+        Dictionary<(Vector2,Vector2, int), MAPFAgent> agentEdgeConstraints;
+        Dictionary<string, MAPFAgent> agentPositiveConstraints;
         agentConstraints = new();
         agentEdgeConstraints = new();
+        agentPositiveConstraints = new();
         foreach (Constraint constraint in constraints)
         {
 
@@ -164,20 +166,33 @@ public class ConflictTreeNode
             {
                 if (constraint.isVertex)
                 {
-                    agentConstraints.Add(constraint.node.position + "" + constraint.timestep, agent);
+                    agentConstraints.Add((constraint.node.position,constraint.timestep), agent);
                 }
                 else
                 {
-                    agentEdgeConstraints.Add(constraint.node.position + "" + constraint.node2.position + constraint.timestep, agent);
-                    agentEdgeConstraints.Add(constraint.node2.position + "" + constraint.node.position + constraint.timestep, agent);
+                    agentEdgeConstraints.Add((constraint.node.position,constraint.node2.position,constraint.timestep), agent);
+                    agentEdgeConstraints.Add((constraint.node2.position,constraint.node.position,constraint.timestep), agent);
                 }
 
+            }
+            else if (constraint.agent.agentId == agent.agentId && constraint.isPositive)
+            {
+                if (constraint.isVertex)
+                {
+                    agentPositiveConstraints.Add(constraint.node.position + "" + constraint.timestep, agent);
+                }
+                else
+                {
+                    agentPositiveConstraints.Add(constraint.node.position + "" + constraint.node2.position + constraint.timestep, agent);
+                    agentPositiveConstraints.Add(constraint.node2.position + "" + constraint.node.position + constraint.timestep, agent);
+                }
             }
         }
         STAStar sTAStar = new STAStar();
         sTAStar.SetSTAStar(_gridGraph, dimensions,rraStar);
         sTAStar.rTable = agentConstraints;
         sTAStar.edgeTable = agentEdgeConstraints;
+        sTAStar.positiveConstraints = agentPositiveConstraints;
         List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {
@@ -193,14 +208,14 @@ public class ConflictTreeNode
     {
         Dictionary<Vector2, MAPFAgent> positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
         Dictionary<(Vector2,Vector2),MAPFAgent> edgesAtTimestep;
-        for (int t=0; t < maxPathLength; t++)
+        for (int t=0; t <= maxPathLength; t++)
         {
 
             positionsAtTimestep = new();
             edgesAtTimestep = new ();
             foreach (MAPFAgent agent in solution.Keys)
             {
-                
+                Debug.Log(agent.agentId);
                 List<MapNode> agentPath = solution[agent];
                 if (agentPath.Count <= t)
                 {

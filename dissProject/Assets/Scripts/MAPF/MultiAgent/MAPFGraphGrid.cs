@@ -48,7 +48,7 @@ public class MAPFGraphGrid : MonoBehaviour
         RandomDestinationAllAgents();
         SetupRRAStar();
         //AStarAllAgents();
-        CBSAllAgents(true);
+        CBSAllAgents(false);
         //CoopAStarAllAgents();
         //CreateAllRenderEdges();
         SolutionChecker();
@@ -273,8 +273,6 @@ public class MAPFGraphGrid : MonoBehaviour
 
     private void SolutionChecker()
     {
-        Hashtable positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
-        Hashtable edgesAtTimestep;
         int maxPathLength = 0;
         foreach(MAPFAgent agent in _MAPFAgents)
         {
@@ -283,39 +281,42 @@ public class MAPFGraphGrid : MonoBehaviour
                 maxPathLength = agent.path.Count;
             }
         }
-        for (int t = 0; t < maxPathLength; t++)
+        Dictionary<Vector2, MAPFAgent> positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
+        Dictionary<(Vector2, Vector2), MAPFAgent> edgesAtTimestep;
+        for (int t = 0; t <= maxPathLength; t++)
         {
 
-            positionsAtTimestep = new Hashtable();
-            edgesAtTimestep = new Hashtable();
+            positionsAtTimestep = new();
+            edgesAtTimestep = new();
             foreach (MAPFAgent agent in _MAPFAgents)
             {
-                if (agent.path.Count <= t) continue;//if the agents path is shorter than t there cant be a collision so go to next agent
-                if (positionsAtTimestep.ContainsKey(agent.path[t].position))
+
+                List<MapNode> agentPath = agent.path;
+                if (agentPath.Count <= t)
                 {
-                    MAPFAgent[] agents = { agent, (MAPFAgent)positionsAtTimestep[agent.path[t].position] };
-                    UnityEngine.Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agent.path[t].position +" time " + (t));
+                    //positionsAtTimestep.Add(agentPath[^1].position, agent);
+                    continue;
                 }
-                else
+                //if the agents path is shorter than t there cant be a collision so go to next agent
+                if (positionsAtTimestep.ContainsKey(agentPath[t].position))
                 {
-                    positionsAtTimestep.Add(agent.path[t].position, agent);
-                }
-                if (agent.path.Count <= t + 1) continue; //if there isnt a node at the next timestep continue
-                if (edgesAtTimestep.ContainsKey(agent.path[t].position + "" + agent.path[t + 1].position))
-                {
-                    MAPFAgent[] agents = { agent, (MAPFAgent)edgesAtTimestep[agent.path[t].position + "" + agent.path[t + 1].position] };
-                    UnityEngine.Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agent.path[t].position +""+ agent.path[t+1].position + "time " + (t));
-                }
-                else
-                {
-                    if (!agent.path[t].position.Equals(agent.path[t + 1].position)) //only add an edge if the agent is travelling to a different node
-                    {
-                        edgesAtTimestep.Add(agent.path[t].position + "" + agent.path[t + 1].position, agent);
-                        edgesAtTimestep.Add(agent.path[t + 1].position + "" + agent.path[t].position, agent); //reserve edge in opposite direction too
-                    }
+                    MAPFAgent[] agents = { agent, positionsAtTimestep[agentPath[t].position] };
+                    UnityEngine.Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position + " time " + (t));
                 }
 
+                positionsAtTimestep.TryAdd(agentPath[t].position, agent);
+                if (agentPath.Count <= t + 1) continue; //if there isnt a node at the next timestep continue
+                if (edgesAtTimestep.ContainsKey((agentPath[t].position, agentPath[t + 1].position)))
+                {
+                    MAPFAgent[] agents = { agent, edgesAtTimestep[(agentPath[t].position, agentPath[t + 1].position)] };
+                    UnityEngine.Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position + "" + agentPath[t + 1].position + "time " + (t));
+                }
 
+                if (!agentPath[t].position.Equals(agentPath[t + 1].position)) //only add an edge if the agent is travelling to a different node
+                {
+                    edgesAtTimestep.TryAdd((agentPath[t].position, agentPath[t + 1].position), agent);
+                    edgesAtTimestep.TryAdd((agentPath[t + 1].position, agentPath[t].position), agent); //reserve edge in opposite direction too
+                }
 
             }
 

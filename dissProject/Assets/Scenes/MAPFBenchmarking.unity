@@ -255,7 +255,7 @@ MonoBehaviour:
   _nodePrefab: {fileID: 4560271229496798657, guid: c47a0a7acc5d63c48933c63e8f305346, type: 3}
   _MAPFAgents: []
   _defaultMaterial: {fileID: 0}
-  _mapName: Assets/BenchmarkMaps/3x3slidingtile.map
+  _mapName: Assets/BenchmarkMaps/8x8grid.map
   _agentCount: 7
 --- !u!1 &296800104
 GameObject:

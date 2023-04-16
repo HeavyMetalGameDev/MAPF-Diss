@@ -11,8 +11,9 @@ public class STAStar
 {
     public List<List<MapNode>> _graph = new List<List<MapNode>>();
     Vector2 dimensions;
-    public Dictionary<string,MAPFAgent> rTable = new Dictionary<string, MAPFAgent>(); //reservation table for node positions
-    public Dictionary<string, MAPFAgent> edgeTable = new Dictionary<string, MAPFAgent>(); //reservation table for edge traversal
+    public Dictionary<(Vector2,int),MAPFAgent> rTable = new Dictionary<(Vector2, int), MAPFAgent>(); //reservation table for node positions
+    public Dictionary<(Vector2,Vector2, int), MAPFAgent> edgeTable = new Dictionary<(Vector2, Vector2, int), MAPFAgent>(); //reservation table for edge traversal
+    public Dictionary<string, MAPFAgent> positiveConstraints = new Dictionary<string, MAPFAgent>();
     public int startingTimestep=0;
     RRAStar rraStar;
     UnityEngine.Object marker;
@@ -125,13 +126,13 @@ public class STAStar
 
                     if (shouldReservePath)
                     {
-                        rTable.Add(workingNode.node + "" + workingNode.time, agent);
+                        rTable.Add((workingNode.node.position,workingNode.time), agent);
                         prevNode = workingNode;
                         workingNode = workingNode.parent;
-                        edgeTable.Add(workingNode.node + "" + prevNode.node + "" + workingNode.time, agent);
+                        edgeTable.Add((workingNode.node.position,prevNode.node.position, workingNode.time), agent);
                         if (!workingNode.PositionIsEqualTo(prevNode.node))
                         {
-                            edgeTable.Add(prevNode.node + "" + workingNode.node + "" + workingNode.time, agent);
+                            edgeTable.Add((prevNode.node.position, workingNode.node.position, workingNode.time), agent);
                         }
                     }
                     else
@@ -175,21 +176,46 @@ public class STAStar
                     }
                     continue;
                 }
-                if (rTable.ContainsKey(adjNode + "" + (workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
+                if (rTable.ContainsKey((adjNode.position,workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
                     continue;
                 }
-                if (edgeTable.ContainsKey(workingNode.node + "" + adjNode + "" + workingNode.time)) //if this edge is reserved, dont consider it
+                else if (positiveConstraints.ContainsKey(adjNode + "" + (workingNode.time + 1))) //if this node is positively constrained, clear the open list and enqueue it as the only node
+                {
+                    UnityEngine.Debug.Log("POSITIVE CONSTRAINT USED");
+                    openList.Clear();
+                    openList.Enqueue(newNode, newNode.GetCost());
+                    openListDict.Add((newNode.node.position, newNode.time), newNode);
+                    return;
+                }
+                if (edgeTable.ContainsKey((workingNode.node.position,adjNode.position,workingNode.time))) //if this edge is reserved, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
                     continue;
+                }
+                else if (positiveConstraints.ContainsKey(adjNode + "" + (workingNode.time + 1))) //if this edge is positively constrained, clear the open list and enqueue it as the only node
+                {
+                    UnityEngine.Debug.Log("POSITIVE CONSTRAINT USED");
+                    openList.Clear();
+                    openList.Enqueue(newNode, newNode.GetCost());
+                    openListDict.Add((newNode.node.position, newNode.time), newNode);
+                    return;
                 }
 
                 if (!openListDict.ContainsKey((newNode.node.position, newNode.time)))
                 {
                     openList.Enqueue(newNode, newNode.GetCost());
                     openListDict.Add((newNode.node.position, newNode.time), newNode);
+                }
+                else
+                {
+                    if(openListDict[(newNode.node.position, newNode.time)].g> newNode.g)
+                    {
+                        openListDict[(newNode.node.position, newNode.time)].g = newNode.g;
+                        openListDict[(newNode.node.position, newNode.time)].parent = workingNode;
+                    }
+                    
                 }
 
             }
