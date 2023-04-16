@@ -48,7 +48,7 @@ public class MAPFGraphGrid : MonoBehaviour
         RandomDestinationAllAgents();
         SetupRRAStar();
         //AStarAllAgents();
-        CBSAllAgents(false);
+        CBSAllAgents(true);
         //CoopAStarAllAgents();
         //CreateAllRenderEdges();
         SolutionChecker();

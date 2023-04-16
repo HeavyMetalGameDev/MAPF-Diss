@@ -89,6 +89,7 @@ public class CBSManager
                     }
                     //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                     newNode.parent = workingNode;
+                    newNode.maxPathLength = workingNode.maxPathLength;
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
                     if (!disjointToggle)
                     {
