@@ -13,21 +13,24 @@ public class STAStar
     Vector2 dimensions;
     public Dictionary<(Vector2,int),MAPFAgent> rTable = new Dictionary<(Vector2, int), MAPFAgent>(); //reservation table for node positions
     public Dictionary<(Vector2,Vector2, int), MAPFAgent> edgeTable = new Dictionary<(Vector2, Vector2, int), MAPFAgent>(); //reservation table for edge traversal
-    public Dictionary<string, MAPFAgent> positiveConstraints = new Dictionary<string, MAPFAgent>();
+    public Dictionary<(Vector2,int), MAPFAgent> positiveConstraints = new Dictionary<(Vector2,int), MAPFAgent>();
+    public Dictionary<(Vector2, Vector2, int), MAPFAgent> positiveEdgeConstraints = new Dictionary<(Vector2, Vector2, int), MAPFAgent>();
     public int startingTimestep=0;
     RRAStar rraStar;
     UnityEngine.Object marker;
     Stopwatch _sw = new Stopwatch();
+    bool considerPositiveConstraints = false;
     int iterator;
     public STAStar()
     {
         marker = Resources.Load("expanded marker");
     }
-    public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions, RRAStar rraStar)
+    public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions, RRAStar rraStar, bool positive)
     {
         _graph = Graph;
         dimensions = Dimensions;
         this.rraStar = rraStar;
+        considerPositiveConstraints = positive;
     }
     public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions)
     {
@@ -149,11 +152,24 @@ public class STAStar
                 return path;
             }
             closedList.Add((workingNode.node.position, workingNode.time), workingNode);
-            if (positiveConstraints.ContainsKey(workingNode.node + "" + (workingNode.time + 1))) //if this edge is positively constrained, clear the open list and enqueue it as the only node
+            if (considerPositiveConstraints)
             {
-                UnityEngine.Debug.Log("POSITIVE CONSTRAINT FOUND");
-                openList.Clear();
+                if (positiveConstraints.ContainsKey((workingNode.node.position, workingNode.time))) //if this edge is positively constrained, clear the open list
+                {
+                    //UnityEngine.Debug.Log("POSITIVE CONSTRAINT FOUND");
+                    openList.Clear();
+                }
+                if (workingNode.parent != null) //if this isnt the source node
+                {
+                    if (positiveEdgeConstraints.ContainsKey((workingNode.parent.node.position, workingNode.node.position, (workingNode.time - 1)))) //if this edge is positively constrained, clear the open list
+                    {
+                        //UnityEngine.Debug.Log("POSITIVE EDGE CONSTRAINT FOUND");
+                        openList.Clear();
+                    }
+                }
+
             }
+
             /*ExpandedNodeDelay xND = ((GameObject)GameObject.Instantiate(marker, new Vector3(workingNode.node.position.x, .4f, workingNode.node.position.y), Quaternion.identity)).GetComponent<ExpandedNodeDelay>();
             iterator++;
             xND.order = iterator;*/
@@ -199,7 +215,7 @@ public class STAStar
                 }
                 else
                 {
-                    if(openListDict[(newNode.node.position, newNode.time)].g> newNode.g)
+                    if(openListDict[(newNode.node.position, newNode.time)].g> newNode.g) //update path to the node if a better one is found
                     {
                         openListDict[(newNode.node.position, newNode.time)].g = newNode.g;
                         openListDict[(newNode.node.position, newNode.time)].parent = workingNode;

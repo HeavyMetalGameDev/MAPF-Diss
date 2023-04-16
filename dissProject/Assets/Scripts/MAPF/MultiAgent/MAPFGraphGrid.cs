@@ -10,6 +10,7 @@ public class MAPFGraphGrid : MonoBehaviour
     //[SerializeField] List<MAPFNode> _nodes;
     [SerializeField] GameObject _agentPrefab;
     [SerializeField] GameObject _nodePrefab;
+    [SerializeField] GameObject _camera;
     [SerializeField] List<MAPFAgent> _MAPFAgents;
     [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
@@ -78,6 +79,9 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
         _gridGraph = _mapReader.GetNodesFromMap();
+
+        _camera.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 2.5f, -20);
+        _camera.transform.LookAt(new Vector3(_mapDimensions.x * 2.5f, 0, _mapDimensions.y * 2.5f));
     }
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
     {
@@ -201,7 +205,7 @@ public class MAPFGraphGrid : MonoBehaviour
             foreach (MAPFAgent agent in _MAPFAgents)
             {
                 isValid = false;
-                _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
+                _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId],false);
                 List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true);
                 if (newPath == null)
                 {

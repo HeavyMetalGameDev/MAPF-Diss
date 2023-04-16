@@ -253,10 +253,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _agentPrefab: {fileID: 763858357717582011, guid: 6f21d86a88407f2499d2974a51b02a65, type: 3}
   _nodePrefab: {fileID: 4560271229496798657, guid: c47a0a7acc5d63c48933c63e8f305346, type: 3}
+  _camera: {fileID: 107405108}
   _MAPFAgents: []
   _defaultMaterial: {fileID: 0}
-  _mapName: Assets/BenchmarkMaps/empty32x32.map
-  _agentCount: 15
+  _mapName: Assets/BenchmarkMaps/CBSTest.map
+  _agentCount: 10
 --- !u!1 &296800104
 GameObject:
   m_ObjectHideFlags: 0
