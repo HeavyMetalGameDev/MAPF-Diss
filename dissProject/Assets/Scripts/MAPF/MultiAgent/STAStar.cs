@@ -149,7 +149,11 @@ public class STAStar
                 return path;
             }
             closedList.Add((workingNode.node.position, workingNode.time), workingNode);
-
+            if (positiveConstraints.ContainsKey(workingNode.node + "" + (workingNode.time + 1))) //if this edge is positively constrained, clear the open list and enqueue it as the only node
+            {
+                UnityEngine.Debug.Log("POSITIVE CONSTRAINT FOUND");
+                openList.Clear();
+            }
             /*ExpandedNodeDelay xND = ((GameObject)GameObject.Instantiate(marker, new Vector3(workingNode.node.position.x, .4f, workingNode.node.position.y), Quaternion.identity)).GetComponent<ExpandedNodeDelay>();
             iterator++;
             xND.order = iterator;*/
@@ -181,27 +185,12 @@ public class STAStar
                     //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
                     continue;
                 }
-                else if (positiveConstraints.ContainsKey(adjNode + "" + (workingNode.time + 1))) //if this node is positively constrained, clear the open list and enqueue it as the only node
-                {
-                    UnityEngine.Debug.Log("POSITIVE CONSTRAINT USED");
-                    openList.Clear();
-                    openList.Enqueue(newNode, newNode.GetCost());
-                    openListDict.Add((newNode.node.position, newNode.time), newNode);
-                    return;
-                }
                 if (edgeTable.ContainsKey((workingNode.node.position,adjNode.position,workingNode.time))) //if this edge is reserved, dont consider it
                 {
                     //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
                     continue;
                 }
-                else if (positiveConstraints.ContainsKey(adjNode + "" + (workingNode.time + 1))) //if this edge is positively constrained, clear the open list and enqueue it as the only node
-                {
-                    UnityEngine.Debug.Log("POSITIVE CONSTRAINT USED");
-                    openList.Clear();
-                    openList.Enqueue(newNode, newNode.GetCost());
-                    openListDict.Add((newNode.node.position, newNode.time), newNode);
-                    return;
-                }
+
 
                 if (!openListDict.ContainsKey((newNode.node.position, newNode.time)))
                 {

@@ -25,6 +25,7 @@ public class CBSManager
             Collision firstCollision = workingNode.VerifyPaths();
             if(firstCollision == null)
             {
+                Debug.Log("RETURNING NODE " + workingNode.nodeID);
                 return workingNode.GetSolution();
             }
             //Debug.Log("PATH IS NOT COLLISION FREE: ADDING NEW NODES");
@@ -35,6 +36,7 @@ public class CBSManager
                     expansions++;
                     //Debug.Log("BEGIN Agent " + agent.agentId);
                     ConflictTreeNode newNode = new ConflictTreeNode();
+                    newNode.nodeID = expansions;
                     foreach (Constraint constraint in workingNode.constraints)
                     {
                         newNode.constraints.Add(constraint);
@@ -51,6 +53,7 @@ public class CBSManager
                     }
                     //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                     newNode.parent = workingNode;
+                    newNode.maxPathLength = workingNode.maxPathLength;
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
                     newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId]);
                     newNode.CalculateNodeCost();
@@ -122,10 +125,11 @@ public class CBSManager
 
 public class ConflictTreeNode
 {
+    public int nodeID;
     public ConflictTreeNode parent;
     public HashSet<Constraint> constraints = new();
     public int nodeCost;
-    int maxPathLength;
+    public int maxPathLength;
     public Dictionary<MAPFAgent, List<MapNode>> solution; //a dictionary assigning one path to one agent
 
     public Dictionary<MAPFAgent, List<MapNode>> GetSolution()
@@ -196,6 +200,7 @@ public class ConflictTreeNode
         List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {
+            Debug.Log("NO PATH");
             nodeCost = -1;
             return;
         }
@@ -206,16 +211,13 @@ public class ConflictTreeNode
 
     public Collision VerifyPaths() //check each agents path at each timestep and if there is a collision, return the collision, return null if no collisions occur
     {
-        Dictionary<Vector2, MAPFAgent> positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
-        Dictionary<(Vector2,Vector2),MAPFAgent> edgesAtTimestep;
+        Dictionary<(Vector2,int), MAPFAgent> positionsTimestep = new(); //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
+        Dictionary<(Vector2,Vector2,int),MAPFAgent> edgesTimestep = new();
         for (int t=0; t <= maxPathLength; t++)
         {
-
-            positionsAtTimestep = new();
-            edgesAtTimestep = new ();
+            //Debug.Log("MAX " +maxPathLength);
             foreach (MAPFAgent agent in solution.Keys)
             {
-                Debug.Log(agent.agentId);
                 List<MapNode> agentPath = solution[agent];
                 if (agentPath.Count <= t)
                 {
@@ -223,29 +225,31 @@ public class ConflictTreeNode
                     continue;
                 }
                 //if the agents path is shorter than t there cant be a collision so go to next agent
-                if (positionsAtTimestep.ContainsKey(agentPath[t].position))
+                if (positionsTimestep.ContainsKey((agentPath[t].position,t)))
                 {
-                    MAPFAgent[] agents = { agent, positionsAtTimestep[agentPath[t].position] };
+                    MAPFAgent[] agents = { agent, positionsTimestep[(agentPath[t].position,t)] };
                     //Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position +" time " + (t));
                     return new Collision(agents, agentPath[t], t);
                 }
-                positionsAtTimestep.Add(agentPath[t].position, agent);
+                positionsTimestep.Add((agentPath[t].position, t), agent);
+                //Debug.Log("ADDED " + agentPath[t].position + agent.agentId);
                 if (agentPath.Count <= t+1) continue; //if there isnt a node at the next timestep continue
-                if (edgesAtTimestep.ContainsKey((agentPath[t].position,agentPath[t+1].position)))
+                if (edgesTimestep.ContainsKey((agentPath[t].position,agentPath[t+1].position,t)))
                 {
-                    MAPFAgent[] agents = { agent, edgesAtTimestep[(agentPath[t].position,agentPath[t+1].position)] };
+                    MAPFAgent[] agents = { agent, edgesTimestep[(agentPath[t].position,agentPath[t+1].position,t)] };
                     //Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position +""+agentPath[t+1].position + "time " + (t));
                     return new Collision(agents, agentPath[t], agentPath[t+1], t);
                 }
                
                 if(!agentPath[t].position.Equals(agentPath[t + 1].position)) //only add an edge if the agent is travelling to a different node
                 {
-                    edgesAtTimestep.Add((agentPath[t].position,agentPath[t + 1].position), agent);
-                    edgesAtTimestep.Add((agentPath[t + 1].position,agentPath[t].position), agent); //reserve edge in opposite direction too
+                    edgesTimestep.Add((agentPath[t].position,agentPath[t + 1].position,t), agent);
+                    edgesTimestep.Add((agentPath[t + 1].position,agentPath[t].position,t), agent); //reserve edge in opposite direction too
                 }
                 
             }
             
+
         }
         return null;
     }
