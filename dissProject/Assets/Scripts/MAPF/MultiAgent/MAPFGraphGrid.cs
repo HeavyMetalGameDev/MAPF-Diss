@@ -198,7 +198,7 @@ public class MAPFGraphGrid : MonoBehaviour
             foreach (MAPFAgent agent in _MAPFAgents)
             {
                 isValid = false;
-                _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId],false);
+                _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
                 List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic);
                 if (newPath == null)
                 {

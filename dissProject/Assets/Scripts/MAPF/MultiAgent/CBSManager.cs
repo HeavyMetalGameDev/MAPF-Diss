@@ -23,11 +23,6 @@ public class CBSManager
             ConflictTreeNode workingNode = _openList.Dequeue();
             if (expansions >= 5000)
             {
-                Debug.Log(workingNode.constraints.Count);
-                foreach(Constraint constraint in workingNode.constraints)
-                {
-                    Debug.Log(constraint);
-                }
                 return null;
             }
             Collision firstCollision = workingNode.VerifyPaths();
@@ -65,7 +60,7 @@ public class CBSManager
                     newNode.parent = workingNode;
                     newNode.maxPathLength = workingNode.maxPathLength;
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
-                    newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId],false);
+                    newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId]);
                     newNode.CalculateNodeCost();
                     if (newNode.nodeCost != -1) // if a path has been found for all agents
                     {
@@ -109,18 +104,24 @@ public class CBSManager
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution); //copy solution dict
                     if (!disjointToggle) //if we added a negative constraint, only replan that agent
                     {
-                        newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId],true); //we only need to replan this agent
+                        newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId]); //we only need to replan this agent
                     }
                     else //if we added a positive constraint, check all agents to see if they need to be replanned
                     {
-                        foreach(MAPFAgent agentToCheck in newNode.solution.Keys)
+                        List<MAPFAgent> agentsToReplan = new(); //seperate list so that the dictionary is not changed while searching
+                        foreach (MAPFAgent agentToCheck in newNode.solution.Keys)
                         {
+                            
                             if (agentToCheck.agentId == agent.agentId) continue; //do not check the agent we just positively constrained
-                            if (CheckIfPathViolatesConstraint(agentToCheck.path, newConstraint))
+                            if (CheckIfPathViolatesConstraint(newNode.solution[agentToCheck], newConstraint))
                             {
-                                newNode.CalculatePathForAgent(_gridGraph, dimensions, agentToCheck, agentRRAStarDict[agent.agentId], true);
+                                agentsToReplan.Add(agentToCheck);
                             }
                         }
+                        foreach(MAPFAgent agentReplan in agentsToReplan)
+                        {
+                            newNode.CalculatePathForAgent(_gridGraph, dimensions, agentReplan, agentRRAStarDict[agent.agentId]);
+                        } 
                     }
                     
                     newNode.CalculateNodeCost();
@@ -139,22 +140,24 @@ public class CBSManager
 
     bool CheckIfPathViolatesConstraint(List<MapNode> path, Constraint constraint)
     {
-        if (path.Count < constraint.timestep) return false;
+        if (path.Count <= constraint.timestep) return false;
         if (constraint.isVertex)
         {
             if (path[constraint.timestep].Equals(constraint.node))
             {
-                Debug.Log("PATH VIOLATION");
                 return true;
             }
             return false;
         }
         else
         {
-            if (path.Count < constraint.timestep + 1) return false;
+            if (path.Count <= constraint.timestep + 1) return false;
             if (path[constraint.timestep].Equals(constraint.node) && path[constraint.timestep+1].Equals(constraint.node2))
             {
-                Debug.Log("EDGE VIOLATION");
+                return true;
+            }
+            else if(path[constraint.timestep].Equals(constraint.node2) && path[constraint.timestep + 1].Equals(constraint.node))
+            {
                 return true;
             }
             return false;
@@ -199,25 +202,26 @@ public class ConflictTreeNode
         List<MAPFAgent> solutionAgents = new List<MAPFAgent>(solution.Keys);
         foreach (MAPFAgent agent in solutionAgents)
         {
-            CalculatePathForAgent(_gridGraph, dimensions, agent, rraStarDict[agent.agentId],positive);
+            CalculatePathForAgent(_gridGraph, dimensions, agent, rraStarDict[agent.agentId]);
         }
         //Paths found successfully!
     }
 
-    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2Int dimensions, MAPFAgent agent, RRAStar rraStar, bool positive)
+    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2Int dimensions, MAPFAgent agent, RRAStar rraStar)
     {
+        //Debug.Log("NEW AGENT");
         Dictionary<(Vector2Int,int), MAPFAgent> agentConstraints = new();
         Dictionary<(Vector2Int,Vector2Int, int), MAPFAgent> agentEdgeConstraints = new();
-        Dictionary<(Vector2Int, int), MAPFAgent> agentPositiveConstraints = new();
-        Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent> agentPositiveEdgeConstraints = new();
 
         foreach (Constraint constraint in constraints)
         {
 
+            //add a negative constraint if this is a negative constraint for this agent or a positive constraint for another agent
             if ((constraint.agent.agentId == agent.agentId && !constraint.isPositive) ||(constraint.agent.agentId != agent.agentId && constraint.isPositive))
             {
                 if (constraint.isVertex)
                 {
+                    //Debug.Log(constraint.isPositive + " " + constraint.node + constraint.timestep +" FOR AGENT " +constraint.agent.agentId + " THIS IS " + agent.agentId);
                     agentConstraints.TryAdd((constraint.node.position,constraint.timestep), agent);
                 }
                 else
@@ -227,25 +231,11 @@ public class ConflictTreeNode
                 }
 
             }
-            else if (constraint.agent.agentId == agent.agentId && constraint.isPositive)
-            {
-                if (constraint.isVertex)
-                {
-                    agentPositiveConstraints.TryAdd((constraint.node.position,constraint.timestep), agent);
-                }
-                else
-                {
-                    agentPositiveEdgeConstraints.TryAdd((constraint.node.position,constraint.node2.position,constraint.timestep), agent);
-                    agentPositiveEdgeConstraints.TryAdd((constraint.node2.position,constraint.node.position,constraint.timestep), agent);
-                }
-            }
         }
         STAStar sTAStar = new STAStar();
-        sTAStar.SetSTAStar(_gridGraph, dimensions,rraStar, positive);
+        sTAStar.SetSTAStar(_gridGraph, dimensions,rraStar);
         sTAStar.rTable = agentConstraints;
         sTAStar.edgeTable = agentEdgeConstraints;
-        sTAStar.positiveConstraints = agentPositiveConstraints;
-        sTAStar.positiveEdgeConstraints = agentPositiveEdgeConstraints;
         List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false,true);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {

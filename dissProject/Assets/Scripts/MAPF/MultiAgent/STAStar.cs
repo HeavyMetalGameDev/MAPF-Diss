@@ -13,24 +13,20 @@ public class STAStar
     Vector2Int dimensions;
     public Dictionary<(Vector2Int,int),MAPFAgent> rTable = new Dictionary<(Vector2Int, int), MAPFAgent>(); //reservation table for node positions
     public Dictionary<(Vector2Int,Vector2Int, int), MAPFAgent> edgeTable = new Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent>(); //reservation table for edge traversal
-    public Dictionary<(Vector2Int,int), MAPFAgent> positiveConstraints = new Dictionary<(Vector2Int,int), MAPFAgent>();
-    public Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent> positiveEdgeConstraints = new Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent>();
     public int startingTimestep=0;
     RRAStar rraStar;
     UnityEngine.Object marker;
     Stopwatch _sw = new Stopwatch();
-    bool considerPositiveConstraints = false;
     int iterator;
     public STAStar()
     {
         marker = Resources.Load("expanded marker");
     }
-    public void SetSTAStar(List<List<MapNode>> Graph, Vector2Int Dimensions, RRAStar rraStar, bool positive)
+    public void SetSTAStar(List<List<MapNode>> Graph, Vector2Int Dimensions, RRAStar rraStar)
     {
         _graph = Graph;
         dimensions = Dimensions;
         this.rraStar = rraStar;
-        considerPositiveConstraints = positive;
     }
     public void SetSTAStar(List<List<MapNode>> Graph, Vector2Int Dimensions)
     {
