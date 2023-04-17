@@ -21,7 +21,7 @@ public class CBSManager
         while (_openList.Count != 0)
         {
             ConflictTreeNode workingNode = _openList.Dequeue();
-            if (expansions >= 50000)
+            if (expansions >= 5000)
             {
                 Debug.Log(workingNode.constraints.Count);
                 foreach(Constraint constraint in workingNode.constraints)
@@ -86,31 +86,41 @@ public class CBSManager
                     expansions++;
                     ConflictTreeNode newNode = new ConflictTreeNode();
                     newNode.nodeID = expansions;
+                    Constraint newConstraint;
                     foreach (Constraint constraint in workingNode.constraints)
                     {
                         newNode.constraints.Add(constraint);
                     }
                     if (firstCollision.isVertex)
                     {
+                        newConstraint = new Constraint(agent, firstCollision.node, firstCollision.timestep, disjointToggle);
                         //Debug.Log("CONSTRAINT " + firstCollision.node.position + firstCollision.timestep + " FOR AGENT " + agent.agentId);
-                        newNode.constraints.Add(new Constraint(agent, firstCollision.node, firstCollision.timestep, disjointToggle));
+                        newNode.constraints.Add(newConstraint);
                     }
                     else
                     {
+                        newConstraint = new Constraint(agent, firstCollision.node, firstCollision.node2, firstCollision.timestep, disjointToggle);
                         //Debug.Log("CONSTRAINT " + firstCollision.node.position + ""+ firstCollision.node2.position + firstCollision.timestep + " FOR AGENT " + agent.agentId);
-                        newNode.constraints.Add(new Constraint(agent, firstCollision.node, firstCollision.node2, firstCollision.timestep, disjointToggle));
+                        newNode.constraints.Add(newConstraint);
                     }
                     //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                     newNode.parent = workingNode;
                     newNode.maxPathLength = workingNode.maxPathLength;
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution); //copy solution dict
-                    if (!disjointToggle)
+                    if (!disjointToggle) //if we added a negative constraint, only replan that agent
                     {
                         newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId],true); //we only need to replan this agent
                     }
-                    else
+                    else //if we added a positive constraint, check all agents to see if they need to be replanned
                     {
-                        newNode.CalculateAllAgentPaths(_gridGraph, dimensions,agentRRAStarDict,true); //we may need to replan all agents to avoid the new collision
+                        foreach(MAPFAgent agentToCheck in newNode.solution.Keys)
+                        {
+                            if (agentToCheck.agentId == agent.agentId) continue; //do not check the agent we just positively constrained
+                            if (CheckIfPathViolatesConstraint(agentToCheck.path, newConstraint))
+                            {
+                                newNode.CalculatePathForAgent(_gridGraph, dimensions, agentToCheck, agentRRAStarDict[agent.agentId], true);
+                            }
+                        }
                     }
                     
                     newNode.CalculateNodeCost();
@@ -127,6 +137,30 @@ public class CBSManager
         return null; //failed to find a solution
     }
 
+    bool CheckIfPathViolatesConstraint(List<MapNode> path, Constraint constraint)
+    {
+        if (path.Count < constraint.timestep) return false;
+        if (constraint.isVertex)
+        {
+            if (path[constraint.timestep].Equals(constraint.node))
+            {
+                Debug.Log("PATH VIOLATION");
+                return true;
+            }
+            return false;
+        }
+        else
+        {
+            if (path.Count < constraint.timestep + 1) return false;
+            if (path[constraint.timestep].Equals(constraint.node) && path[constraint.timestep+1].Equals(constraint.node2))
+            {
+                Debug.Log("EDGE VIOLATION");
+                return true;
+            }
+            return false;
+        }
+
+    }
     public CBSManager(List<List<MapNode>> gridGraph, List<MAPFAgent> MAPFAgents, Vector2 dimensions, bool disjointSplitting)
     {
         _gridGraph = gridGraph;
