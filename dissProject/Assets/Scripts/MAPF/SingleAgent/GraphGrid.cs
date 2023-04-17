@@ -17,8 +17,8 @@ public class GraphGrid : MonoBehaviour
     [SerializeField] Material _defaultMaterial;
     public delegate void RefreshGrid(Node node);
     public static RefreshGrid refreshGrid;
-    Dictionary<Vector2, Node> _nodeDict = new Dictionary<Vector2, Node>();
-    Vector2[] _dirs = { new Vector2(0, 5), new Vector2(5, 0)};
+    Dictionary<Vector2Int, Node> _nodeDict = new Dictionary<Vector2Int, Node>();
+    Vector2Int[] _dirs = { new Vector2Int(0, 5), new Vector2Int(5, 0)};
     AStarManager aStarManager = new AStarManager();
     BidirectionalGraph<Node, Edge<Node>> _gridGraph = new BidirectionalGraph<Node, Edge<Node>>(true);
     ConflictManager _cf = new ConflictManager();
@@ -29,7 +29,7 @@ public class GraphGrid : MonoBehaviour
 
     int _maxPathLength = 0;
     int _agentCount = 100;
-    Vector2 _mapDimensions;
+    Vector2Int _mapDimensions;
     float stopwatchTotal = 0;
 
     private void Start()
@@ -108,7 +108,7 @@ public class GraphGrid : MonoBehaviour
             _gridGraph.AddVertex(node);
             _nodeDict[node.position] = node;
             node._nodeMarker.ToggleMarker(true);
-            foreach (Vector2 dir in _dirs)
+            foreach (Vector2Int dir in _dirs)
             {
                 if (_nodeDict.TryGetValue(node.position + dir, out Node value))
                 {
@@ -174,20 +174,11 @@ public class GraphGrid : MonoBehaviour
             counter += 1;
         }
     }
-    private void CreateAllRenderEdges()
-    {
-        foreach (Edge<Node> edge in _gridGraph.Edges)
-        {
-            LineRenderer lineRenderer = Instantiate(_edgeRenderer, _renderedEdgesParent).GetComponent<LineRenderer>();
-            lineRenderer.SetPositions(new Vector3[2] { edge.Source.position, edge.Target.position });
-        }
-    } 
-
     private void AddEdgesToGraph()
     {
         foreach (Node node in _gridGraph.Vertices)
         {
-            foreach (Vector2 dir in _dirs)
+            foreach (Vector2Int dir in _dirs)
             {
                 if (_nodeDict.TryGetValue(node.position + dir, out Node value) && value.nodeType.Equals(NodeTypeEnum.WALKABLE))
                 {
@@ -312,7 +303,7 @@ public class GraphGrid : MonoBehaviour
     {
         foreach(AStarAgent agent in _AStarAgents)
         {
-            Vector2 agentPos = new Vector2(agent.transform.position.x,agent.transform.position.z);
+            Vector2Int agentPos = new Vector2Int((int)agent.transform.position.x, (int)agent.transform.position.z);
             if (_nodeDict.TryGetValue(agentPos, out Node outNode))
             {
                 agent.SetCurrent(outNode);

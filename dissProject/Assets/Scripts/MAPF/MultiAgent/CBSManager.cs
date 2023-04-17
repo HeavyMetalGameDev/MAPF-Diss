@@ -6,7 +6,7 @@ public class CBSManager
 {
     public List<List<MapNode>> _gridGraph;
     public List<MAPFAgent> _MAPFAgents;
-    public Vector2 dimensions;
+    public Vector2Int dimensions;
     public SimplePriorityQueue<ConflictTreeNode> _openList = new SimplePriorityQueue<ConflictTreeNode>();
     public Dictionary<int, RRAStar> agentRRAStarDict = new Dictionary<int, RRAStar>();
     bool disjointSplitting = false;
@@ -161,7 +161,7 @@ public class CBSManager
         }
 
     }
-    public CBSManager(List<List<MapNode>> gridGraph, List<MAPFAgent> MAPFAgents, Vector2 dimensions, bool disjointSplitting)
+    public CBSManager(List<List<MapNode>> gridGraph, List<MAPFAgent> MAPFAgents, Vector2Int dimensions, bool disjointSplitting)
     {
         _gridGraph = gridGraph;
         _MAPFAgents = MAPFAgents;
@@ -193,7 +193,7 @@ public class ConflictTreeNode
             solution.Add(agent, new List<MapNode>());
         }
     }
-    public void CalculateAllAgentPaths(List<List<MapNode>> _gridGraph, Vector2 dimensions, Dictionary<int, RRAStar> rraStarDict, bool positive)
+    public void CalculateAllAgentPaths(List<List<MapNode>> _gridGraph, Vector2Int dimensions, Dictionary<int, RRAStar> rraStarDict, bool positive)
     {
         
         List<MAPFAgent> solutionAgents = new List<MAPFAgent>(solution.Keys);
@@ -204,12 +204,12 @@ public class ConflictTreeNode
         //Paths found successfully!
     }
 
-    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2 dimensions, MAPFAgent agent, RRAStar rraStar, bool positive)
+    public void CalculatePathForAgent(List<List<MapNode>> _gridGraph, Vector2Int dimensions, MAPFAgent agent, RRAStar rraStar, bool positive)
     {
-        Dictionary<(Vector2,int), MAPFAgent> agentConstraints = new();
-        Dictionary<(Vector2,Vector2, int), MAPFAgent> agentEdgeConstraints = new();
-        Dictionary<(Vector2, int), MAPFAgent> agentPositiveConstraints = new();
-        Dictionary<(Vector2, Vector2, int), MAPFAgent> agentPositiveEdgeConstraints = new();
+        Dictionary<(Vector2Int,int), MAPFAgent> agentConstraints = new();
+        Dictionary<(Vector2Int,Vector2Int, int), MAPFAgent> agentEdgeConstraints = new();
+        Dictionary<(Vector2Int, int), MAPFAgent> agentPositiveConstraints = new();
+        Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent> agentPositiveEdgeConstraints = new();
 
         foreach (Constraint constraint in constraints)
         {
@@ -260,8 +260,8 @@ public class ConflictTreeNode
 
     public Collision VerifyPaths() //check each agents path at each timestep and if there is a collision, return the collision, return null if no collisions occur
     {
-        Dictionary<(Vector2,int), MAPFAgent> positionsTimestep = new(); //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
-        Dictionary<(Vector2,Vector2,int),MAPFAgent> edgesTimestep = new();
+        Dictionary<(Vector2Int,int), MAPFAgent> positionsTimestep = new(); //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
+        Dictionary<(Vector2Int,Vector2Int,int),MAPFAgent> edgesTimestep = new();
         List<Collision> collisions = new(0);
         for (int t=0; t <= maxPathLength; t++)
         {

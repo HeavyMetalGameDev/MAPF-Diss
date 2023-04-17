@@ -5,14 +5,14 @@ using UnityEngine;
 
 public class Node : MonoBehaviour, IComparable<Node>
 {
-    [SerializeField] public Vector2 position;
+    [SerializeField] public Vector2Int position;
     [SerializeField] public NodeTypeEnum nodeType;
     public GridMarker _nodeMarker;
     public bool isTargeted;
     public bool isOccupied;
     public float cost = 1;
 
-    public Node(Vector2 position, NodeTypeEnum nodeType)
+    public Node(Vector2Int position, NodeTypeEnum nodeType)
     {
         this.position = position;
         this.nodeType = nodeType;
@@ -34,6 +34,6 @@ public class Node : MonoBehaviour, IComparable<Node>
     }
     private void Awake()
     {
-        position = new Vector2(transform.position.x, transform.position.z);
+        position = new Vector2Int((int)transform.position.x, (int)transform.position.z);
     }
 }

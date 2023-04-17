@@ -13,7 +13,7 @@ public class MAPFGraphGrid : MonoBehaviour
     [SerializeField] GameObject _camera;
     [SerializeField] List<MAPFAgent> _MAPFAgents;
     [SerializeField] Material _defaultMaterial;
-    Dictionary<Vector2, MapNode> _nodeDict = new Dictionary<Vector2, MapNode>();
+    Dictionary<Vector2Int, MapNode> _nodeDict = new Dictionary<Vector2Int, MapNode>();
     List<List<MapNode>> _gridGraph = new List<List<MapNode>>();
     public Dictionary<int, RRAStar> agentRRAStarDict = new();
     MAPFMapReader _mapReader = new MAPFMapReader();
@@ -30,7 +30,7 @@ public class MAPFGraphGrid : MonoBehaviour
     public delegate void AgentArrived(MAPFAgent agent);
     public static AgentArrived agentArrived;
 
-    Vector2 _mapDimensions;
+    Vector2Int _mapDimensions;
 
     public void Execute()
     {
@@ -83,7 +83,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 {
                     GameObject createdNode = Instantiate(_nodePrefab, transform);
                     createdNode.transform.position = new Vector3(node.position.x, 0, node.position.y);
-                    _nodeDict.Add(node.position, node);
+                    _nodeDict.Add(node.position, node); 
                 }
                 //createdNodeComponent._nodeMarker = Instantiate(_nodeMarker, createdNode.transform).GetComponent<GridMarker>();
                 //createdNodeComponent._nodeMarker.ToggleMarker(isWalkable);
@@ -266,8 +266,8 @@ public class MAPFGraphGrid : MonoBehaviour
                 maxPathLength = agent.path.Count;
             }
         }
-        Dictionary<Vector2, MAPFAgent> positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
-        Dictionary<(Vector2, Vector2), MAPFAgent> edgesAtTimestep;
+        Dictionary<Vector2Int, MAPFAgent> positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
+        Dictionary<(Vector2Int, Vector2Int), MAPFAgent> edgesAtTimestep;
         for (int t = 0; t <= maxPathLength; t++)
         {
 
@@ -301,7 +301,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 {
                     edgesAtTimestep.TryAdd((agentPath[t].position, agentPath[t + 1].position), agent);
                     edgesAtTimestep.TryAdd((agentPath[t + 1].position, agentPath[t].position), agent); //reserve edge in opposite direction too
-                }
+                } 
 
             }
 

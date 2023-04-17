@@ -10,11 +10,11 @@ using Unity.Profiling;
 public class STAStar
 {
     public List<List<MapNode>> _graph = new List<List<MapNode>>();
-    Vector2 dimensions;
-    public Dictionary<(Vector2,int),MAPFAgent> rTable = new Dictionary<(Vector2, int), MAPFAgent>(); //reservation table for node positions
-    public Dictionary<(Vector2,Vector2, int), MAPFAgent> edgeTable = new Dictionary<(Vector2, Vector2, int), MAPFAgent>(); //reservation table for edge traversal
-    public Dictionary<(Vector2,int), MAPFAgent> positiveConstraints = new Dictionary<(Vector2,int), MAPFAgent>();
-    public Dictionary<(Vector2, Vector2, int), MAPFAgent> positiveEdgeConstraints = new Dictionary<(Vector2, Vector2, int), MAPFAgent>();
+    Vector2Int dimensions;
+    public Dictionary<(Vector2Int,int),MAPFAgent> rTable = new Dictionary<(Vector2Int, int), MAPFAgent>(); //reservation table for node positions
+    public Dictionary<(Vector2Int,Vector2Int, int), MAPFAgent> edgeTable = new Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent>(); //reservation table for edge traversal
+    public Dictionary<(Vector2Int,int), MAPFAgent> positiveConstraints = new Dictionary<(Vector2Int,int), MAPFAgent>();
+    public Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent> positiveEdgeConstraints = new Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent>();
     public int startingTimestep=0;
     RRAStar rraStar;
     UnityEngine.Object marker;
@@ -25,14 +25,14 @@ public class STAStar
     {
         marker = Resources.Load("expanded marker");
     }
-    public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions, RRAStar rraStar, bool positive)
+    public void SetSTAStar(List<List<MapNode>> Graph, Vector2Int Dimensions, RRAStar rraStar, bool positive)
     {
         _graph = Graph;
         dimensions = Dimensions;
         this.rraStar = rraStar;
         considerPositiveConstraints = positive;
     }
-    public void SetSTAStar(List<List<MapNode>> Graph, Vector2 Dimensions)
+    public void SetSTAStar(List<List<MapNode>> Graph, Vector2Int Dimensions)
     {
         _graph = Graph;
         dimensions = Dimensions;
@@ -43,7 +43,7 @@ public class STAStar
     {
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, 0, null);
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
-        Dictionary<Vector2, MAPFNode> closedList = new Dictionary<Vector2, MAPFNode>();
+        Dictionary<Vector2Int, MAPFNode> closedList = new Dictionary<Vector2Int, MAPFNode>();
         List<MapNode> path = new List<MapNode>();
         MAPFNode workingNode;
         openList.Enqueue(source, source.GetCost());
@@ -103,8 +103,8 @@ public class STAStar
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, startingTimestep, null);
         List<MapNode> path = new List<MapNode>();
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
-        Dictionary<(Vector2,int),MAPFNode> closedList = new Dictionary<(Vector2, int), MAPFNode>();
-        Dictionary<(Vector2, int), MAPFNode> openListDict = new Dictionary<(Vector2, int), MAPFNode>();
+        Dictionary<(Vector2Int,int),MAPFNode> closedList = new Dictionary<(Vector2Int, int), MAPFNode>();
+        Dictionary<(Vector2Int, int), MAPFNode> openListDict = new Dictionary<(Vector2Int, int), MAPFNode>();
 
         MAPFNode workingNode;
         openList.Enqueue(source, source.GetCost());
@@ -204,9 +204,9 @@ public class STAStar
                 if (!openListDict.ContainsKey((newNode.node.position, newNode.time)))
                 {
                     openList.Enqueue(newNode, newNode.GetCost());
-                    openListDict.Add((newNode.node.position, newNode.time), newNode);
+                    openListDict.Add((newNode.node.position , newNode.time), newNode);
                 }
-                else
+                else 
                 {
                     if(openListDict[(newNode.node.position, newNode.time)].GetCost()> newNode.GetCost()) //update path to the node if a better one is found
                     {

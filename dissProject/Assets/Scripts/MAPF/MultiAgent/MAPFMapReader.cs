@@ -7,14 +7,14 @@ public class MAPFMapReader
 {
     string _mapFileName;
     List<string> _map = new List<string>();
-    public Vector2 ReadMapFromFile(string fileName)
+    public Vector2Int ReadMapFromFile(string fileName)
     {
         _mapFileName = fileName;
         var loadedMap = (TextAsset)Resources.Load("BenchmarkMaps/" + fileName);
         _map = new List<string>(loadedMap.text.Split("\n"));
         _map.RemoveRange(0, 4);
         _map.Reverse();
-        return new Vector2(_map[0].Length, _map.Count);
+        return new Vector2Int(_map[0].Length, _map.Count);
     }
 
     public List<List<MapNode>> GetNodesFromMap()
@@ -29,12 +29,12 @@ public class MAPFMapReader
                 char nodeChar = _map[y][x];
                 if (nodeChar.Equals('.'))
                 {
-                    newNode = new MapNode(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
+                    newNode = new MapNode(new Vector2Int(x * 5, y * 5), NodeTypeEnum.WALKABLE);
                     subNodes.Add(newNode);
                 }
                 else if (nodeChar.Equals('@') || nodeChar.Equals('T'))
                 {
-                    newNode = new MapNode(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
+                    newNode = new MapNode(new Vector2Int(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
                     subNodes.Add(newNode);
                 }
             }

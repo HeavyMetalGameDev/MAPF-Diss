@@ -8,7 +8,7 @@ public class MapReader
     string _mapFileName;
     int _readIgnoreCounter = 4;
     List<string> _map = new List<string>();
-    public Vector2 ReadMapFromFile(string fileName)
+    public Vector2Int ReadMapFromFile(string fileName)
     {
         _mapFileName = fileName;
         using (StreamReader reader = new StreamReader(_mapFileName))
@@ -26,7 +26,7 @@ public class MapReader
             _map.Reverse();
 
         }
-        return new Vector2(_map[0].Length, _map.Count);
+        return new Vector2Int(_map[0].Length, _map.Count);
     }
 
     public  Node[] GetNodesFromMap()
@@ -40,12 +40,12 @@ public class MapReader
                 char nodeChar = _map[y][x];
                 if (nodeChar.Equals('.'))
                 {
-                    newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.WALKABLE);
+                    newNode = new Node(new Vector2Int(x * 5, y * 5), NodeTypeEnum.WALKABLE);
                     nodes.Add(newNode);
                 }
                 else if (nodeChar.Equals('@') || nodeChar.Equals('T'))
                 {
-                    //newNode = new Node(new Vector2(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
+                    //newNode = new Node(new Vector2Int(x * 5, y * 5), NodeTypeEnum.NOT_WALKABLE);
                     //nodes.Add(newNode);
                 }
             }

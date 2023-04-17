@@ -6,7 +6,7 @@ using UnityEngine;
 [Serializable]
 public class MapNode: IEquatable<MapNode>
 {
-    [SerializeField] public Vector2 position;
+    [SerializeField] public Vector2Int position;
     [SerializeField] public NodeTypeEnum nodeType;
     public GridMarker _nodeMarker;
     public bool isTargeted;
@@ -16,7 +16,7 @@ public class MapNode: IEquatable<MapNode>
     {
         return position.ToString();
     }
-    public MapNode(Vector2 position, NodeTypeEnum nodeType)
+    public MapNode(Vector2Int position, NodeTypeEnum nodeType)
     {
         this.position = position;
         this.nodeType = nodeType;
@@ -34,7 +34,7 @@ public class MapNode: IEquatable<MapNode>
         if (position.Equals(compareNode.position)) return true;
         return false;
     }
-    public void SetPos(Vector2 pos)
+    public void SetPos(Vector2Int pos)
     {
         position = pos;
     }

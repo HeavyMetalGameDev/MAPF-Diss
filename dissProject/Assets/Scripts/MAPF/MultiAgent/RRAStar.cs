@@ -6,14 +6,14 @@ using Priority_Queue;
 public class RRAStar
 {
     List<List<MapNode>> graph = new List<List<MapNode>>();
-    Vector2 dimensions;
+    Vector2Int dimensions;
     Dictionary<int, Dictionary<MapNode, int>> agent;
     MAPFNode source;
     SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
-    public Dictionary<Vector2, MAPFNode> closedList = new Dictionary<Vector2, MAPFNode>();
-    public Dictionary<Vector2, MAPFNode> openListDict = new Dictionary<Vector2, MAPFNode>();
+    public Dictionary<Vector2Int, MAPFNode> closedList = new Dictionary<Vector2Int, MAPFNode>();
+    public Dictionary<Vector2Int, MAPFNode> openListDict = new Dictionary<Vector2Int, MAPFNode>();
     MAPFNode workingNode;
-    public RRAStar(MapNode destinationNode, List<List<MapNode>> graph, Vector2 dimensions)
+    public RRAStar(MapNode destinationNode, List<List<MapNode>> graph, Vector2Int dimensions)
     {
         source = new MAPFNode(destinationNode, 0, 0, 0, null);
         this.graph = graph;
