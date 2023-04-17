@@ -152,23 +152,6 @@ public class STAStar
                 return path;
             }
             closedList.Add((workingNode.node.position, workingNode.time), workingNode);
-            if (considerPositiveConstraints)
-            {
-                if (positiveConstraints.ContainsKey((workingNode.node.position, workingNode.time))) //if this edge is positively constrained, clear the open list
-                {
-                    //UnityEngine.Debug.Log("POSITIVE CONSTRAINT FOUND");
-                    openList.Clear();
-                }
-                if (workingNode.parent != null) //if this isnt the source node
-                {
-                    if (positiveEdgeConstraints.ContainsKey((workingNode.parent.node.position, workingNode.node.position, (workingNode.time - 1)))) //if this edge is positively constrained, clear the open list
-                    {
-                        //UnityEngine.Debug.Log("POSITIVE EDGE CONSTRAINT FOUND");
-                        openList.Clear();
-                    }
-                }
-
-            }
 
             /*ExpandedNodeDelay xND = ((GameObject)GameObject.Instantiate(marker, new Vector3(workingNode.node.position.x, .4f, workingNode.node.position.y), Quaternion.identity)).GetComponent<ExpandedNodeDelay>();
             iterator++;

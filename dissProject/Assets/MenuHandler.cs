@@ -8,8 +8,9 @@ public class MenuHandler : MonoBehaviour
 {
 
     public string selectedAlgorithm = "A*";
-    public string selectedMap = "8x8grid";
-    public int agentCount;
+    public string selectedMap = "empty-8-8";
+    public int agentCount = 1;
+    public int scenario = 1;
 
     public void HandleAlgorithmDropdown(int val)
     {
@@ -38,22 +39,17 @@ public class MenuHandler : MonoBehaviour
         switch (val)
         {
             case 0:
-                selectedMap = "8x8grid";
+                selectedMap = "empty-8-8";
                 break;
             case 1:
                 selectedMap = "maze-32-32-4";
                 break;
-            case 2:
-                selectedMap = "HCA*";
-                break;
-            case 3:
-                selectedMap = "CBS";
-                break;
-            case 4:
-                selectedMap = "CBS with Disjoint Splitting";
-                break;
 
         }
+    }
+    public void HandleScenarioDropdown(int val)
+    {
+        scenario = val + 1;
     }
 
     public void HandleAgentCount(string input)
@@ -81,6 +77,7 @@ public class MenuHandler : MonoBehaviour
         graphGridObject._mapName = selectedMap;
         graphGridObject._agentCount = agentCount;
         graphGridObject.algorithmToUse = selectedAlgorithm;
+        graphGridObject.scenarioNum = scenario;
         graphGridObject.Execute();
         Destroy(gameObject);
     }

@@ -14,7 +14,6 @@ public class MAPFMapReader
         _map = new List<string>(loadedMap.text.Split("\n"));
         _map.RemoveRange(0, 4);
         _map.Reverse();
-        _map.RemoveAt(0);
         return new Vector2(_map[0].Length, _map.Count);
     }
 

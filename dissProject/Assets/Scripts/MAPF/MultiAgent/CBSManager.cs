@@ -184,12 +184,12 @@ public class ConflictTreeNode
             {
                 if (constraint.isVertex)
                 {
-                    agentConstraints.Add((constraint.node.position,constraint.timestep), agent);
+                    agentConstraints.TryAdd((constraint.node.position,constraint.timestep), agent);
                 }
                 else
                 {
-                    agentEdgeConstraints.Add((constraint.node.position,constraint.node2.position,constraint.timestep), agent);
-                    agentEdgeConstraints.Add((constraint.node2.position,constraint.node.position,constraint.timestep), agent);
+                    agentEdgeConstraints.TryAdd((constraint.node.position,constraint.node2.position,constraint.timestep), agent);
+                    agentEdgeConstraints.TryAdd((constraint.node2.position,constraint.node.position,constraint.timestep), agent);
                 }
 
             }
@@ -197,12 +197,12 @@ public class ConflictTreeNode
             {
                 if (constraint.isVertex)
                 {
-                    agentPositiveConstraints.Add((constraint.node.position,constraint.timestep), agent);
+                    agentPositiveConstraints.TryAdd((constraint.node.position,constraint.timestep), agent);
                 }
                 else
                 {
-                    agentPositiveEdgeConstraints.Add((constraint.node.position,constraint.node2.position,constraint.timestep), agent);
-                    agentPositiveEdgeConstraints.Add((constraint.node2.position,constraint.node.position,constraint.timestep), agent);
+                    agentPositiveEdgeConstraints.TryAdd((constraint.node.position,constraint.node2.position,constraint.timestep), agent);
+                    agentPositiveEdgeConstraints.TryAdd((constraint.node2.position,constraint.node.position,constraint.timestep), agent);
                 }
             }
         }

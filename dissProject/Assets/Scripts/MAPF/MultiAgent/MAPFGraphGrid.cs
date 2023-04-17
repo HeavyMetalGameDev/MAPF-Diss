@@ -22,6 +22,7 @@ public class MAPFGraphGrid : MonoBehaviour
     [SerializeField] public string _mapName;
     [SerializeField] public int _agentCount;
     public string algorithmToUse;
+    public int scenarioNum;
 
     STAStar _stAStar;
     CBSManager _cbsManager;
@@ -36,8 +37,9 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         AddNodesToGraph();
         CombineMapMeshes();
-        CreateRandomAgents(_agentCount);
-        RandomDestinationAllAgents();
+        SetupScenario(scenarioNum);
+        //CreateRandomAgents(_agentCount);
+        //RandomDestinationAllAgents();
         SetupRRAStar();
         UnityEngine.Debug.Log(algorithmToUse + " with " + _agentCount + " agents on " + _mapName);
         switch (algorithmToUse)
@@ -155,6 +157,11 @@ public class MAPFGraphGrid : MonoBehaviour
         }
     }
 
+    private void SetupScenario(int scenarioID)
+    {
+        ScenarioReader sr = new ScenarioReader();
+        _MAPFAgents = sr.ReadScenarioAgents(_mapName, scenarioID, _agentCount, _gridGraph, _agentPrefab);
+    }
     private void CreateRandomAgents(int agentCount)
     {
         List<MAPFAgent> agentsList = new List<MAPFAgent>();

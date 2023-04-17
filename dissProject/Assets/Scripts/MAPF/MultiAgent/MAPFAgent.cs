@@ -13,21 +13,26 @@ public class MAPFAgent : MonoBehaviour
     public MapNode nextNode;
     public List<MapNode> path;
     public int timesteps;
+    bool atDestination = false;
     Vector3 _nextVector;
 
     public void SetPath(List<MapNode> path)
     {
-        if (path == null) return;
-        if (path.Count == 0) return;
+        if (path == null || path.Count == 0)
+        {
+            atDestination = true;
+            return;
+        }
+
         path.RemoveAt(0);
         this.path = path;
+        if (path.Count == 0)
+        {
+            atDestination = true;
+            return;
+        }
         nextNode = path[0];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
-        /*foreach(MAPFNode node in path)
-        {
-            Instantiate(_pathmarkerPrefab, new Vector3(node.position.x, 0, node.position.y), Quaternion.identity);
-        }
-        */
     }
     public void SetDestination(MapNode node)
     {
@@ -59,6 +64,7 @@ public class MAPFAgent : MonoBehaviour
     }
     private void Update()
     {
+        if (atDestination) return;
         timer += Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
         if (timer>=.5f)
