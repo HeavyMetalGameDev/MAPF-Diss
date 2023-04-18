@@ -13,6 +13,7 @@ public class MAPFAgent : MonoBehaviour
     public MapNode nextNode;
     public List<MapNode> path;
     public int timesteps;
+    public int goalTimestep;
     bool atDestination = false;
     Vector3 _nextVector;
 

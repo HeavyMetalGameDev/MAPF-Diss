@@ -10,18 +10,20 @@ public class CBSManager
     public SimplePriorityQueue<ConflictTreeNode> _openList = new SimplePriorityQueue<ConflictTreeNode>();
     public Dictionary<int, RRAStar> agentRRAStarDict = new Dictionary<int, RRAStar>();
     bool disjointSplitting = false;
+    public int sumOfCosts;
     public Dictionary<MAPFAgent, List<MapNode>> Plan()
     {
         int expansions = 0;
         ConflictTreeNode rootNode = new ConflictTreeNode();
         rootNode.SetupSolution(_MAPFAgents);
+        rootNode.padding = (dimensions.x+dimensions.y) *2;
         rootNode.CalculateAllAgentPaths(_gridGraph, dimensions, agentRRAStarDict,disjointSplitting);
         rootNode.CalculateNodeCost();
         _openList.Enqueue(rootNode, rootNode.nodeCost);
         while (_openList.Count != 0)
         {
             ConflictTreeNode workingNode = _openList.Dequeue();
-            if (expansions >= 5000)
+            if (expansions >= 50000)
             {
                 return null;
             }
@@ -29,7 +31,8 @@ public class CBSManager
             //Debug.Log("PROCESSING NODE " + workingNode.nodeID);
             if (firstCollision == null)
             {
-                Debug.Log("RETURNING NODE " + workingNode.nodeID);
+                Debug.Log("RETURNING NODE " + workingNode.nodeID +" COST: " + workingNode.nodeCost);
+                sumOfCosts = workingNode.nodeCost;
                 return workingNode.GetSolution();
             }
 
@@ -59,7 +62,9 @@ public class CBSManager
                     //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                     newNode.parent = workingNode;
                     newNode.maxPathLength = workingNode.maxPathLength;
+                    newNode.padding = workingNode.padding;
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution);
+                    newNode.goalTimeDict = new Dictionary<MAPFAgent, int>(workingNode.goalTimeDict);
                     newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId]);
                     newNode.CalculateNodeCost();
                     if (newNode.nodeCost != -1) // if a path has been found for all agents
@@ -101,7 +106,9 @@ public class CBSManager
                     //Debug.Log("CONSTRAINT COUNT:" + newNode.constraints.Count);
                     newNode.parent = workingNode;
                     newNode.maxPathLength = workingNode.maxPathLength;
+                    newNode.padding = workingNode.padding;
                     newNode.solution = new Dictionary<MAPFAgent, List<MapNode>>(workingNode.solution); //copy solution dict
+                    newNode.goalTimeDict = new Dictionary<MAPFAgent, int>(workingNode.goalTimeDict);
                     if (!disjointToggle) //if we added a negative constraint, only replan that agent
                     {
                         newNode.CalculatePathForAgent(_gridGraph, dimensions, agent, agentRRAStarDict[agent.agentId]); //we only need to replan this agent
@@ -182,7 +189,9 @@ public class ConflictTreeNode
     public int nodeCost;
     public int maxPathLength;
     public int numberOfCollisions;
+    public int padding;
     public Dictionary<MAPFAgent, List<MapNode>> solution; //a dictionary assigning one path to one agent
+    public Dictionary<MAPFAgent, int> goalTimeDict;
 
     public Dictionary<MAPFAgent, List<MapNode>> GetSolution()
     {
@@ -190,10 +199,12 @@ public class ConflictTreeNode
     }
     public void SetupSolution(List<MAPFAgent> agents) //add empty path for each agent
     {
-        solution = new Dictionary<MAPFAgent, List<MapNode>>();
+        solution = new ();
+        goalTimeDict = new();
         foreach (MAPFAgent agent in agents)
         {
             solution.Add(agent, new List<MapNode>());
+            goalTimeDict.Add(agent,0);
         }
     }
     public void CalculateAllAgentPaths(List<List<MapNode>> _gridGraph, Vector2Int dimensions, Dictionary<int, RRAStar> rraStarDict, bool positive)
@@ -236,14 +247,15 @@ public class ConflictTreeNode
         sTAStar.SetSTAStar(_gridGraph, dimensions,rraStar);
         sTAStar.rTable = agentConstraints;
         sTAStar.edgeTable = agentEdgeConstraints;
-        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false,true);
+        List<MapNode> agentPath = sTAStar.GetSTAStarPath(agent,false,true, padding);
         if (agentPath == null) //if we failed to find a path for an agent, exit out
         {
-            Debug.Log("NO PATH");
+            //Debug.Log("NO PATH");
             nodeCost = -1;
             return;
         }
         solution[agent] = agentPath;
+        goalTimeDict[agent] = sTAStar.finalTimestep;
         if (solution[agent].Count > maxPathLength) maxPathLength = solution[agent].Count;
         //Paths found successfully!
     }
@@ -305,11 +317,17 @@ public class ConflictTreeNode
     public void CalculateNodeCost() //sum of costs value
     {
         if (nodeCost == -1) return;
-        foreach(List<MapNode> path in solution.Values)
+        /*foreach(List<MapNode> path in solution.Values) //if padding isnt used
         {
             nodeCost += path.Count-1;
-        }
+        }*/
         //nodeCost = numberOfCollisions; //suboptimal version of CBS that will prioritise low collisions over path cost
+        nodeCost = 0;
+        foreach (int time in goalTimeDict.Values)
+        {
+            
+            nodeCost += time;
+        }
     }
 
 

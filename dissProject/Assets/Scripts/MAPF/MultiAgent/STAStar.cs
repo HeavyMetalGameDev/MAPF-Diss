@@ -18,6 +18,7 @@ public class STAStar
     UnityEngine.Object marker;
     Stopwatch _sw = new Stopwatch();
     int iterator;
+    public int finalTimestep;
     public STAStar()
     {
         marker = Resources.Load("expanded marker");
@@ -35,13 +36,14 @@ public class STAStar
         marker = Resources.Load("expanded marker");
     }
 
-    public List<MapNode> GetSingleAgentPath(MAPFAgent agent)
+    public List<MapNode> GetAStarPath(MAPFAgent agent)
     {
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, 0, null);
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
         Dictionary<Vector2Int, MAPFNode> closedList = new Dictionary<Vector2Int, MAPFNode>();
         List<MapNode> path = new List<MapNode>();
         MAPFNode workingNode;
+
         openList.Enqueue(source, source.GetCost());
         while (openList.Count != 0)
         {
@@ -49,7 +51,6 @@ public class STAStar
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
-                
                 while (workingNode.parent != null)
                 {
 
@@ -59,6 +60,7 @@ public class STAStar
                 }
                 path.Add(agent.currentNode);
                 path.Reverse();
+                
 
                 //UnityEngine.Debug.Log("OPEN: " + openList.Count);
                 //UnityEngine.Debug.Log("CLOSED: " + closedList.Count);
@@ -94,29 +96,32 @@ public class STAStar
         return null;
     }
 
-    public List<MapNode> GetSTAStarPath(MAPFAgent agent, bool shouldReservePath, bool useImprovedHeuristic)
+    public List<MapNode> GetSTAStarPath(MAPFAgent agent, bool shouldReservePath, bool useImprovedHeuristic, int padding)
     {
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, startingTimestep, null);
         List<MapNode> path = new List<MapNode>();
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
         Dictionary<(Vector2Int,int),MAPFNode> closedList = new Dictionary<(Vector2Int, int), MAPFNode>();
         Dictionary<(Vector2Int, int), MAPFNode> openListDict = new Dictionary<(Vector2Int, int), MAPFNode>();
-
         MAPFNode workingNode;
+        bool reachedDestination = false;
         openList.Enqueue(source, source.GetCost());
-        int pathPadding = 20;
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
-                /*openList = new();
-                if (pathPadding > 0)
+                if (!reachedDestination)
                 {
-                    pathPadding--;
+                    finalTimestep = workingNode.time;
+                    reachedDestination = true;
+                }
+                openList = new();
+                if (workingNode.time<padding)
+                {
                     ProcessAdjacentNodes();
                     continue;
-                }*/
+                }
                 MAPFNode prevNode;
                 while (workingNode.parent != null)
                 {
@@ -162,7 +167,7 @@ public class STAStar
         {
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
             {
-                int nodeHValue;
+                int nodeHValue = 0;
                 if (useImprovedHeuristic)
                 {
                     nodeHValue = rraStar.GetNodeHeuristic(adjNode);
@@ -171,8 +176,7 @@ public class STAStar
                 {
                     nodeHValue = CalculateManhattan(adjNode, agent.destinationNode);
                 }
-                 
-                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, nodeHValue, workingNode.time + 1, workingNode);
+                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 1, nodeHValue, workingNode.time + 1, workingNode);
                 if (closedList.ContainsKey((adjNode.position, workingNode.time + 1)))
                 {
                     closedList.TryGetValue((adjNode.position, workingNode.time + 1), out MAPFNode closedListNode);
@@ -218,7 +222,7 @@ public class STAStar
     }
     public int CalculateManhattan(MapNode start, MapNode end)
     {
-        return (int)(Mathf.Abs(start.position.x - end.position.x) + (int)Mathf.Abs(start.position.y - end.position.y));
+        return (Mathf.Abs(start.position.x - end.position.x) + Mathf.Abs(start.position.y - end.position.y));
     }
 
     public List<MapNode> GetAdjacentNodes(MAPFNode node)

@@ -32,6 +32,9 @@ public class MAPFGraphGrid : MonoBehaviour
 
     Vector2Int _mapDimensions;
 
+    float executionTime;
+    int sumOfCosts;
+
     public void Execute()
     {
         GetDataFromMapReader();
@@ -62,6 +65,7 @@ public class MAPFGraphGrid : MonoBehaviour
         }
         
         SolutionChecker();
+        WriteResultsToFile();
     }
     private void GetDataFromMapReader()
     {
@@ -189,6 +193,7 @@ public class MAPFGraphGrid : MonoBehaviour
         int iterationsAllowed = 20;
         while (!isValid)
         {
+            sumOfCosts = 0;
             _stAStar = new STAStar();
             iterationsAllowed--;
             if (iterationsAllowed <= 0)
@@ -199,7 +204,7 @@ public class MAPFGraphGrid : MonoBehaviour
             {
                 isValid = false;
                 _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
-                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic);
+                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic, (_mapDimensions.x+_mapDimensions.y)*2);
                 if (newPath == null)
                 {
                     UnityEngine.Debug.Log("REPLAN");
@@ -211,34 +216,36 @@ public class MAPFGraphGrid : MonoBehaviour
                 {
                     
                     isValid = true;
+                    sumOfCosts += _stAStar.finalTimestep;
                 }
                 agent.SetPath(newPath);
 
             }
+            
         }
 
         _sw.Stop();
-        UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
-
+        executionTime = _sw.ElapsedMilliseconds;
 
     }
     private void AStarAllAgents()
     {
+        sumOfCosts = 0;
         _stAStar = new STAStar();
         _sw.Start();
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
-            agent.SetPath(_stAStar.GetSingleAgentPath(agent));
+            agent.SetPath(_stAStar.GetAStarPath(agent));
+            sumOfCosts += agent.path.Count;
         }
         _sw.Stop();
-        UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
-
-
+        executionTime = _sw.ElapsedMilliseconds;
     }
 
     private void CBSAllAgents(bool disjoint)
     {
+        sumOfCosts = 0;
         _sw.Start();
         _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions,disjoint);
         _cbsManager.agentRRAStarDict = agentRRAStarDict;
@@ -248,12 +255,15 @@ public class MAPFGraphGrid : MonoBehaviour
             UnityEngine.Debug.Log("FAILED TO FIND CBS SOLUTION");
             return;
         }
-        _sw.Stop();
-        UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
+
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             agent.SetPath(solution[agent]);
         }
+        sumOfCosts = _cbsManager.sumOfCosts;
+
+        _sw.Stop();
+        executionTime = _sw.ElapsedMilliseconds;
     }
 
     private void SolutionChecker()
@@ -306,6 +316,12 @@ public class MAPFGraphGrid : MonoBehaviour
             }
 
         }
+    }
+
+    private void WriteResultsToFile()
+    {
+        UnityEngine.Debug.Log(executionTime);
+        UnityEngine.Debug.Log("SUM OF COSTS: " + sumOfCosts );
     }
     private void CombineMapMeshes()
     {
