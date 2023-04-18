@@ -103,7 +103,6 @@ public class STAStar
         bool reachedDestination = false;
   
         openList.Enqueue(source, source.GetCost());
-        Debug.Log(finalTimestep);
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
@@ -114,16 +113,29 @@ public class STAStar
                     finalTimestep = workingNode.time;
                     reachedDestination = true;
                 }
-                openList = new();
-                if (workingNode.time<longestTimestep)
+                if (padding != 0)
                 {
-                    ProcessAdjacentNodes();
-                    continue;
+                    if (workingNode.time < padding)
+                    {
+                        ProcessAdjacentNodes();
+                        continue;
+                    }
                 }
-                if (finalTimestep > longestTimestep) //if this path is longer than any previous path, update longest timestep
+                else
                 {
-                    longestTimestep = finalTimestep;
+
+                    openList = new();
+                    if (workingNode.time < longestTimestep)
+                    {
+                        ProcessAdjacentNodes();
+                        continue;
+                    }
+                    if (finalTimestep > longestTimestep) //if this path is longer than any previous path, update longest timestep
+                    {
+                        longestTimestep = finalTimestep;
+                    }
                 }
+
 
                 MAPFNode prevNode;
                 if (shouldReservePath) goalReservations.Add(agent.destinationNode.position, workingNode.time);

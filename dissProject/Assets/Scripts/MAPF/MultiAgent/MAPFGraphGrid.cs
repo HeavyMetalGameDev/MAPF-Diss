@@ -21,6 +21,7 @@ public class MAPFGraphGrid : MonoBehaviour
 
     [SerializeField] public string _mapName;
     [SerializeField] public int _agentCount;
+    int prevAgentCount = 0;
     public string algorithmToUse;
     public int scenarioNum;
 
@@ -41,34 +42,50 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         AddNodesToGraph();
         CombineMapMeshes();
-        SetupScenario(scenarioNum);
+        
         //CreateRandomAgents(_agentCount);
         //RandomDestinationAllAgents();
-        UnityEngine.Debug.Log(algorithmToUse + " with " + _agentCount + " agents on " + _mapName);
-        //while (success)
-       // {
-            SetupRRAStar();
+        
+        while (success)
+        {
+            foreach (MAPFAgent agent in _MAPFAgents)
+            {
+                Destroy(agent.gameObject);
+            }
+            prevAgentCount = _agentCount;
+            SetupScenario(scenarioNum);
+            
             switch (algorithmToUse)
             {
                 case "AStar":
                     success = AStarAllAgents();
                     break;
                 case "CAStar":
+                    SetupRRAStar();
                     success = CoopAStarAllAgents(false);
                     break;
                 case "HCAStar":
+                    SetupRRAStar();
                     success = CoopAStarAllAgents(true);
                     break;
                 case "CBS":
+                    SetupRRAStar();
                     success = CBSAllAgents(false);
                     break;
                 case "CBS-DS":
+                    SetupRRAStar();
                     success = CBSAllAgents(true);
                     break;
             }
             SolutionChecker();
             WriteResultsToFile();
-        //}
+            _agentCount++;
+            if (prevAgentCount == _agentCount)
+            {
+                break;
+            }
+            
+        }
 
     }
     private void GetDataFromMapReader()
@@ -103,6 +120,7 @@ public class MAPFGraphGrid : MonoBehaviour
     }
     private void SetupRRAStar()
     {
+        agentRRAStarDict.Clear();
         foreach (MAPFAgent agent in _MAPFAgents) //setup RRA star for each agent since the calculated heuristics can be reused in each Conflict Node low level
         {
             agentRRAStarDict.Add(agent.agentId, new RRAStar(agent.destinationNode, _gridGraph, _mapDimensions));
@@ -209,7 +227,7 @@ public class MAPFGraphGrid : MonoBehaviour
             {
                 isValid = false;
                 _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
-                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic, (_mapDimensions.x+_mapDimensions.y)*2);
+                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic, 0);
                 if (newPath == null)
                 {
                     UnityEngine.Debug.Log("REPLAN");
@@ -243,7 +261,9 @@ public class MAPFGraphGrid : MonoBehaviour
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
-            agent.SetPath(_stAStar.GetAStarPath(agent));
+            List<MapNode> path = _stAStar.GetAStarPath(agent);
+            if (path == null) return false;
+            agent.SetPath(path);
             sumOfCosts += agent.path.Count;
             if (_sw.ElapsedMilliseconds >= 30000)
             {
