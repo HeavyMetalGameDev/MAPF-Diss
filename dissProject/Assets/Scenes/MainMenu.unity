@@ -2568,6 +2568,8 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: maze-32-32-4
       m_Image: {fileID: 0}
+    - m_Text: brc202d
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -4329,7 +4331,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ba9b589920454c9976c4753c3cdb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedAlgorithm: A*
+  selectedAlgorithm: AStar
   selectedMap: empty-8-8
   agentCount: 1
   scenario: 1

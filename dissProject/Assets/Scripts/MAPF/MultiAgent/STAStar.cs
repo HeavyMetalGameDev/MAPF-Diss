@@ -4,8 +4,6 @@ using UnityEngine;
 using QuikGraph;
 using System.Linq;
 using Priority_Queue;
-using System.Diagnostics;
-using Unity.Profiling;
 
 public class STAStar
 {
@@ -13,12 +11,13 @@ public class STAStar
     Vector2Int dimensions;
     public Dictionary<(Vector2Int,int),MAPFAgent> rTable = new Dictionary<(Vector2Int, int), MAPFAgent>(); //reservation table for node positions
     public Dictionary<(Vector2Int,Vector2Int, int), MAPFAgent> edgeTable = new Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent>(); //reservation table for edge traversal
+    public Dictionary<Vector2Int, int> goalReservations = new Dictionary<Vector2Int, int>(); //dict holding goal reservations. key is position and value is timestep the goal is reached, all agents should avoid after that time
     public int startingTimestep=0;
     RRAStar rraStar;
     UnityEngine.Object marker;
-    Stopwatch _sw = new Stopwatch();
     int iterator;
     public int finalTimestep;
+    int longestTimestep;
     public STAStar()
     {
         marker = Resources.Load("expanded marker");
@@ -47,7 +46,6 @@ public class STAStar
         openList.Enqueue(source, source.GetCost());
         while (openList.Count != 0)
         {
-            _sw.Start();
             workingNode = openList.Dequeue();
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
@@ -88,8 +86,6 @@ public class STAStar
                 }
 
             }
-            //_sw.Stop();
-            //UnityEngine.Debug.Log(_sw.ElapsedMilliseconds);
 
         }
         //UnityEngine.Debug.Log("NO PATH FOUND");
@@ -105,7 +101,9 @@ public class STAStar
         Dictionary<(Vector2Int, int), MAPFNode> openListDict = new Dictionary<(Vector2Int, int), MAPFNode>();
         MAPFNode workingNode;
         bool reachedDestination = false;
+  
         openList.Enqueue(source, source.GetCost());
+        Debug.Log(finalTimestep);
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
@@ -117,12 +115,18 @@ public class STAStar
                     reachedDestination = true;
                 }
                 openList = new();
-                if (workingNode.time<padding)
+                if (workingNode.time<longestTimestep)
                 {
                     ProcessAdjacentNodes();
                     continue;
                 }
+                if (finalTimestep > longestTimestep) //if this path is longer than any previous path, update longest timestep
+                {
+                    longestTimestep = finalTimestep;
+                }
+
                 MAPFNode prevNode;
+                if (shouldReservePath) goalReservations.Add(agent.destinationNode.position, workingNode.time);
                 while (workingNode.parent != null)
                 {
                     //Debug.Log(workingNode + " - " + workingNode.parent);
@@ -168,6 +172,27 @@ public class STAStar
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
             {
                 int nodeHValue = 0;
+                if (rTable.ContainsKey((adjNode.position, workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
+                {
+                    //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
+                    continue;
+                }
+                if (edgeTable.ContainsKey((workingNode.node.position, adjNode.position, workingNode.time))) //if this edge is reserved, dont consider it
+                {
+                    //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
+                    continue;
+                }
+                if (shouldReservePath) //if this is CA* or HCA* we check for goal reservations
+                {
+                    if (goalReservations.ContainsKey(adjNode.position)) //if this position is another previously planned agent's goal
+                    {
+                        if (goalReservations[adjNode.position] <= workingNode.time + 1) //if the goal has been reached before this timestep
+                        {
+                            continue;
+                        }
+                    }
+                }
+
                 if (useImprovedHeuristic)
                 {
                     nodeHValue = rraStar.GetNodeHeuristic(adjNode);
@@ -189,16 +214,7 @@ public class STAStar
                     }
                     continue;
                 }
-                if (rTable.ContainsKey((adjNode.position,workingNode.time + 1))) //if this time position is reserved at the nest timestep, dont consider it
-                {
-                    //UnityEngine.Debug.Log(agent.agentId +" AVOID AT " + adjNode.position + "" + (workingNode.time + 1));
-                    continue;
-                }
-                if (edgeTable.ContainsKey((workingNode.node.position,adjNode.position,workingNode.time))) //if this edge is reserved, dont consider it
-                {
-                    //UnityEngine.Debug.Log(agent.agentId + " AVOID EDGE AT " + workingNode.position + "" + adjNode.position + "" +workingNode.time);
-                    continue;
-                }
+
 
 
                 if (!openListDict.ContainsKey((newNode.node.position, newNode.time)))

@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class MenuHandler : MonoBehaviour
 {
 
-    public string selectedAlgorithm = "A*";
+    public string selectedAlgorithm = "AStar";
     public string selectedMap = "empty-8-8";
     public int agentCount = 1;
     public int scenario = 1;
@@ -17,19 +17,19 @@ public class MenuHandler : MonoBehaviour
         switch (val)
         {
             case 0:
-                selectedAlgorithm = "A*";
+                selectedAlgorithm = "AStar";
                 break;
             case 1:
-                selectedAlgorithm = "CA*";
+                selectedAlgorithm = "CAStar";
                 break;
             case 2:
-                selectedAlgorithm = "HCA*";
+                selectedAlgorithm = "HCAStar";
                 break;
             case 3:
                 selectedAlgorithm = "CBS";
                 break;
             case 4:
-                selectedAlgorithm = "CBS with Disjoint Splitting";
+                selectedAlgorithm = "CBS-DS";
                 break;
 
         }
@@ -44,6 +44,10 @@ public class MenuHandler : MonoBehaviour
             case 1:
                 selectedMap = "maze-32-32-4";
                 break;
+            case 2:
+                selectedMap = "brc202d";
+                break;
+
 
         }
     }
@@ -54,6 +58,7 @@ public class MenuHandler : MonoBehaviour
 
     public void HandleAgentCount(string input)
     {
+        if (input == "") return;
         agentCount = int.Parse(input);
     }
 

@@ -37,42 +37,46 @@ public class MAPFGraphGrid : MonoBehaviour
 
     public void Execute()
     {
+        bool success = true;
         GetDataFromMapReader();
         AddNodesToGraph();
         CombineMapMeshes();
         SetupScenario(scenarioNum);
         //CreateRandomAgents(_agentCount);
         //RandomDestinationAllAgents();
-        SetupRRAStar();
         UnityEngine.Debug.Log(algorithmToUse + " with " + _agentCount + " agents on " + _mapName);
-        switch (algorithmToUse)
-        {
-            case "A*":
-                AStarAllAgents();
-                break;
-            case "CA*":
-                CoopAStarAllAgents(false);
-                break;
-            case "HCA*":
-                CoopAStarAllAgents(true);
-                break;
-            case "CBS":
-                CBSAllAgents(false);
-                break;
-            case "CBS with Disjoint Splitting":
-                CBSAllAgents(true);
-                break;
-        }
-        
-        SolutionChecker();
-        WriteResultsToFile();
+        //while (success)
+       // {
+            SetupRRAStar();
+            switch (algorithmToUse)
+            {
+                case "AStar":
+                    success = AStarAllAgents();
+                    break;
+                case "CAStar":
+                    success = CoopAStarAllAgents(false);
+                    break;
+                case "HCAStar":
+                    success = CoopAStarAllAgents(true);
+                    break;
+                case "CBS":
+                    success = CBSAllAgents(false);
+                    break;
+                case "CBS-DS":
+                    success = CBSAllAgents(true);
+                    break;
+            }
+            SolutionChecker();
+            WriteResultsToFile();
+        //}
+
     }
     private void GetDataFromMapReader()
     {
         _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
         _gridGraph = _mapReader.GetNodesFromMap();
 
-        _camera.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 2.5f, -_mapDimensions.y * 2.5f);
+        _camera.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 3f, -_mapDimensions.y * 2.5f);
         _camera.transform.LookAt(new Vector3(_mapDimensions.x * 2.5f, 0, _mapDimensions.y * 2.5f));
     }
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
@@ -165,6 +169,7 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         ScenarioReader sr = new ScenarioReader();
         _MAPFAgents = sr.ReadScenarioAgents(_mapName, scenarioID, _agentCount, _gridGraph, _agentPrefab);
+        _agentCount = _MAPFAgents.Count;
     }
     private void CreateRandomAgents(int agentCount)
     {
@@ -185,9 +190,9 @@ public class MAPFGraphGrid : MonoBehaviour
         _MAPFAgents = agentsList;
     }
 
-    private void CoopAStarAllAgents(bool useImprovedHeuristic)
+    private bool CoopAStarAllAgents(bool useImprovedHeuristic)
     {
-        
+        _sw.Reset();
         _sw.Start();
         bool isValid = false;
         int iterationsAllowed = 20;
@@ -196,9 +201,9 @@ public class MAPFGraphGrid : MonoBehaviour
             sumOfCosts = 0;
             _stAStar = new STAStar();
             iterationsAllowed--;
-            if (iterationsAllowed <= 0)
+            if (_sw.ElapsedMilliseconds >= 30000)
             {
-                break;
+                return false;
             }
             foreach (MAPFAgent agent in _MAPFAgents)
             {
@@ -226,34 +231,41 @@ public class MAPFGraphGrid : MonoBehaviour
 
         _sw.Stop();
         executionTime = _sw.ElapsedMilliseconds;
+        return true;
 
     }
-    private void AStarAllAgents()
+    private bool AStarAllAgents()
     {
+        _sw.Reset();
+        _sw.Start();
         sumOfCosts = 0;
         _stAStar = new STAStar();
-        _sw.Start();
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions);
             agent.SetPath(_stAStar.GetAStarPath(agent));
             sumOfCosts += agent.path.Count;
+            if (_sw.ElapsedMilliseconds >= 30000)
+            {
+                return false;
+            }
         }
         _sw.Stop();
         executionTime = _sw.ElapsedMilliseconds;
+        return true;
     }
 
-    private void CBSAllAgents(bool disjoint)
+    private bool CBSAllAgents(bool disjoint)
     {
+        _sw.Reset();
         sumOfCosts = 0;
-        _sw.Start();
         _cbsManager = new CBSManager(_gridGraph,_MAPFAgents,_mapDimensions,disjoint);
         _cbsManager.agentRRAStarDict = agentRRAStarDict;
         Dictionary<MAPFAgent, List<MapNode>> solution = _cbsManager.Plan();
         if (solution == null)
         {
             UnityEngine.Debug.Log("FAILED TO FIND CBS SOLUTION");
-            return;
+            return false;
         }
 
         foreach (MAPFAgent agent in _MAPFAgents)
@@ -261,9 +273,8 @@ public class MAPFGraphGrid : MonoBehaviour
             agent.SetPath(solution[agent]);
         }
         sumOfCosts = _cbsManager.sumOfCosts;
-
-        _sw.Stop();
-        executionTime = _sw.ElapsedMilliseconds;
+        executionTime = _cbsManager.executionTime;
+        return true;
     }
 
     private void SolutionChecker()
@@ -320,6 +331,7 @@ public class MAPFGraphGrid : MonoBehaviour
 
     private void WriteResultsToFile()
     {
+        ResultsWriter.WriteResult( _agentCount+ "\t" + executionTime + "\t" + sumOfCosts, algorithmToUse,_mapName);
         UnityEngine.Debug.Log(executionTime);
         UnityEngine.Debug.Log("SUM OF COSTS: " + sumOfCosts );
     }

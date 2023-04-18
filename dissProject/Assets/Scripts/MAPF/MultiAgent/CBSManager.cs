@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Priority_Queue;
+using System.Diagnostics;
 public class CBSManager
 {
     public List<List<MapNode>> _gridGraph;
@@ -11,8 +12,12 @@ public class CBSManager
     public Dictionary<int, RRAStar> agentRRAStarDict = new Dictionary<int, RRAStar>();
     bool disjointSplitting = false;
     public int sumOfCosts;
+    public long executionTime;
+    Stopwatch sw = new Stopwatch();
+
     public Dictionary<MAPFAgent, List<MapNode>> Plan()
     {
+        sw.Start();
         int expansions = 0;
         ConflictTreeNode rootNode = new ConflictTreeNode();
         rootNode.SetupSolution(_MAPFAgents);
@@ -23,7 +28,7 @@ public class CBSManager
         while (_openList.Count != 0)
         {
             ConflictTreeNode workingNode = _openList.Dequeue();
-            if (expansions >= 50000)
+            if (sw.ElapsedMilliseconds >=30000) //30 second timeout
             {
                 return null;
             }
@@ -31,7 +36,8 @@ public class CBSManager
             //Debug.Log("PROCESSING NODE " + workingNode.nodeID);
             if (firstCollision == null)
             {
-                Debug.Log("RETURNING NODE " + workingNode.nodeID +" COST: " + workingNode.nodeCost);
+                sw.Stop();
+                executionTime = sw.ElapsedMilliseconds;
                 sumOfCosts = workingNode.nodeCost;
                 return workingNode.GetSolution();
             }
