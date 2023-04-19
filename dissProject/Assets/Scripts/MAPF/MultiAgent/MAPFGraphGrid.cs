@@ -327,7 +327,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 if (positionsAtTimestep.ContainsKey(agentPath[t].position))
                 {
                     MAPFAgent[] agents = { agent, positionsAtTimestep[agentPath[t].position] };
-                    UnityEngine.Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position + " time " + (t));
+                    //UnityEngine.Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position + " time " + (t));
                 }
 
                 positionsAtTimestep.TryAdd(agentPath[t].position, agent);
@@ -335,7 +335,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 if (edgesAtTimestep.ContainsKey((agentPath[t].position, agentPath[t + 1].position)))
                 {
                     MAPFAgent[] agents = { agent, edgesAtTimestep[(agentPath[t].position, agentPath[t + 1].position)] };
-                    UnityEngine.Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position + "" + agentPath[t + 1].position + "time " + (t));
+                    //UnityEngine.Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position + "" + agentPath[t + 1].position + "time " + (t));
                 }
 
                 if (!agentPath[t].position.Equals(agentPath[t + 1].position)) //only add an edge if the agent is travelling to a different node
@@ -352,8 +352,8 @@ public class MAPFGraphGrid : MonoBehaviour
     private void WriteResultsToFile()
     {
         ResultsWriter.WriteResult( _agentCount+ "\t" + executionTime + "\t" + sumOfCosts, algorithmToUse,_mapName);
-        UnityEngine.Debug.Log(executionTime);
-        UnityEngine.Debug.Log("SUM OF COSTS: " + sumOfCosts );
+        //UnityEngine.Debug.Log(executionTime);
+        //UnityEngine.Debug.Log("SUM OF COSTS: " + sumOfCosts );
     }
     private void CombineMapMeshes()
     {

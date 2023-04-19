@@ -21,7 +21,7 @@ public class CBSManager
         int expansions = 0;
         ConflictTreeNode rootNode = new ConflictTreeNode();
         rootNode.SetupSolution(_MAPFAgents);
-        rootNode.padding = (dimensions.x+dimensions.y) *2;
+        rootNode.padding = 200;
         rootNode.CalculateAllAgentPaths(_gridGraph, dimensions, agentRRAStarDict,disjointSplitting);
         rootNode.CalculateNodeCost();
         _openList.Enqueue(rootNode, rootNode.nodeCost);

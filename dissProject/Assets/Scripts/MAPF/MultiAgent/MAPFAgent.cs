@@ -16,6 +16,7 @@ public class MAPFAgent : MonoBehaviour
     public int goalTimestep;
     bool atDestination = false;
     Vector3 _nextVector;
+    Quaternion lookRotation;
 
     public void SetPath(List<MapNode> path)
     {
@@ -34,6 +35,7 @@ public class MAPFAgent : MonoBehaviour
         }
         nextNode = path[0];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
+        lookRotation = Quaternion.LookRotation((_nextVector - transform.position).normalized);
     }
     public void SetDestination(MapNode node)
     {
@@ -61,6 +63,7 @@ public class MAPFAgent : MonoBehaviour
         }
         nextNode = path[0];
         _nextVector = new Vector3(nextNode.position.x, 0, nextNode.position.y);
+        lookRotation = Quaternion.LookRotation((_nextVector - transform.position).normalized);
 
     }
     private void Update()
@@ -68,6 +71,7 @@ public class MAPFAgent : MonoBehaviour
         if (atDestination) return;
         timer += Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, _nextVector, 10*Time.deltaTime);
+        RotateWalkDirection();
         if (timer>=.5f)
         {
             //transform.position = _nextVector;
@@ -76,4 +80,8 @@ public class MAPFAgent : MonoBehaviour
         }
     }
     
+    private void RotateWalkDirection()
+    {
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5);
+    }
 }

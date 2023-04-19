@@ -119,7 +119,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 28
+  controlID: 86
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -634,7 +634,7 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 4.81818, y: 11.870013, z: -0.55908453}
+    m_Target: {x: 27.058039, y: 23.677423, z: -18.16765}
     speed: 2
     m_Value: {x: 4.81818, y: 11.870013, z: -0.55908453}
   m_RenderMode: 0
@@ -682,9 +682,9 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.32495824, y: 0.11731248, z: -0.040717382, w: 0.9375085}
+    m_Target: {x: 0.35824436, y: -0.035013843, z: 0.013392044, w: 0.93284404}
     speed: 2
-    m_Value: {x: 0.32496795, y: 0.11731599, z: -0.0407186, w: 0.9375366}
+    m_Value: {x: -0.32495824, y: -0.11731248, z: 0.040717386, w: -0.9375085}
   m_Size:
     m_Target: 2.4494896
     speed: 2
