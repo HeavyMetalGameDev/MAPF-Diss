@@ -84,7 +84,6 @@ public class MAPFGraphGrid : MonoBehaviour
             {
                 break;
             }
-            
         }
 
     }

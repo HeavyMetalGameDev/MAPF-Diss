@@ -92,7 +92,7 @@ public class STAStar
         return null;
     }
 
-    public List<MapNode> GetSTAStarPath(MAPFAgent agent, bool shouldReservePath, bool useImprovedHeuristic, int padding)
+    public List<MapNode> GetSTAStarPath(MAPFAgent agent, bool shouldReservePath, bool useImprovedHeuristic, int timeOfLastConstraint)
     {
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, startingTimestep, null);
         List<MapNode> path = new List<MapNode>();
@@ -117,13 +117,10 @@ public class STAStar
                     finalTimestep = workingNode.time;
                     reachedDestination = true;
                 }
-                if (padding != 0)
+                if (workingNode.time < timeOfLastConstraint)
                 {
-                    if (workingNode.time < padding)
-                    {
-                        ProcessAdjacentNodes();
-                        continue;
-                    }
+                    ProcessAdjacentNodes();
+                    continue;
                 }
                 else
                 {
