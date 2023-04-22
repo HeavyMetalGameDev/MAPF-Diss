@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using QuikGraph;
-using System.Linq;
 using Priority_Queue;
+using System.Diagnostics;
 
 public class STAStar
 {
@@ -18,6 +17,7 @@ public class STAStar
     int iterator;
     public int finalTimestep;
     int longestTimestep;
+
     public STAStar()
     {
         marker = Resources.Load("expanded marker");
@@ -101,11 +101,15 @@ public class STAStar
         Dictionary<(Vector2Int, int), MAPFNode> openListDict = new Dictionary<(Vector2Int, int), MAPFNode>();
         MAPFNode workingNode;
         bool reachedDestination = false;
+        Stopwatch sw = new();
+        sw.Start();
   
         openList.Enqueue(source, source.GetCost());
         while (openList.Count != 0)
         {
+            if (sw.ElapsedMilliseconds > 30000) return null;
             workingNode = openList.Dequeue();
+            openListDict.Remove((workingNode.node.position, workingNode.time));
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
                 if (!reachedDestination)
@@ -123,7 +127,6 @@ public class STAStar
                 }
                 else
                 {
-
                     openList = new();
                     if (workingNode.time < longestTimestep)
                     {

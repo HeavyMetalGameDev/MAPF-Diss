@@ -13,6 +13,7 @@ public class CBSManager
     bool disjointSplitting = false;
     public int sumOfCosts;
     public long executionTime;
+    int padding;
     Stopwatch sw = new Stopwatch();
 
     public Dictionary<MAPFAgent, List<MapNode>> Plan()
@@ -21,7 +22,7 @@ public class CBSManager
         int expansions = 0;
         ConflictTreeNode rootNode = new ConflictTreeNode();
         rootNode.SetupSolution(_MAPFAgents);
-        rootNode.padding = 200;
+        rootNode.padding = dimensions.x + dimensions.y;
         rootNode.CalculateAllAgentPaths(_gridGraph, dimensions, agentRRAStarDict,disjointSplitting);
         rootNode.CalculateNodeCost();
         _openList.Enqueue(rootNode, rootNode.nodeCost);
@@ -182,6 +183,7 @@ public class CBSManager
         _gridGraph = gridGraph;
         _MAPFAgents = MAPFAgents;
         this.dimensions = dimensions;
+        padding = dimensions.x + dimensions.y;
         this.disjointSplitting = disjointSplitting;
     }
 }

@@ -7,7 +7,6 @@ public class RRAStar
 {
     List<List<MapNode>> graph = new List<List<MapNode>>();
     Vector2Int dimensions;
-    Dictionary<int, Dictionary<MapNode, int>> agent;
     MAPFNode source;
     SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
     public Dictionary<Vector2Int, MAPFNode> closedList = new Dictionary<Vector2Int, MAPFNode>();
@@ -25,10 +24,6 @@ public class RRAStar
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
-            if (workingNode.PositionIsEqualTo(targetNode))
-            {
-                return workingNode.g;
-            }
             closedList.Add(workingNode.node.position, workingNode);
 
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
@@ -50,6 +45,11 @@ public class RRAStar
                     }
                 }
             }
+            if (workingNode.PositionIsEqualTo(targetNode))
+            {
+                return workingNode.g;
+            }
+            
         }
         return -1;
     }

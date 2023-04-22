@@ -212,40 +212,30 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         _sw.Reset();
         _sw.Start();
-        bool isValid = false;
         int iterationsAllowed = 20;
-        while (!isValid)
+        sumOfCosts = 0;
+        _stAStar = new STAStar();
+        iterationsAllowed--;
+        foreach (MAPFAgent agent in _MAPFAgents)
         {
-            sumOfCosts = 0;
-            _stAStar = new STAStar();
-            iterationsAllowed--;
+            _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
             if (_sw.ElapsedMilliseconds >= 30000)
             {
                 return false;
             }
-            foreach (MAPFAgent agent in _MAPFAgents)
+            List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic, 0);
+            if (newPath == null)
             {
-                isValid = false;
-                _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);
-                List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic, 0);
-                if (newPath == null)
-                {
-                    UnityEngine.Debug.Log("REPLAN");
-                    _MAPFAgents.Remove(agent);
-                    _MAPFAgents.Insert(0, agent); //increase an agents priority then replan
-                    break;
-                }
-                else
-                {
-                    
-                    isValid = true;
-                    sumOfCosts += _stAStar.finalTimestep;
-                }
-                agent.SetPath(newPath);
-
+                return false;
             }
-            
+            else
+            {
+                sumOfCosts += _stAStar.finalTimestep;
+            }
+            agent.SetPath(newPath);
+
         }
+            
 
         _sw.Stop();
         executionTime = _sw.ElapsedMilliseconds;
