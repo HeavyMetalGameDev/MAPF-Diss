@@ -225,6 +225,7 @@ public class MAPFGraphGrid : MonoBehaviour
             List<MapNode> newPath = _stAStar.GetSTAStarPath(agent, true, useImprovedHeuristic, 0);
             if (newPath == null)
             {
+                Destroy(agent.gameObject);
                 return false;
             }
             else

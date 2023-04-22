@@ -40,6 +40,7 @@ public class STAStar
         MAPFNode source = new MAPFNode(agent.currentNode, 0, 0, 0, null);
         SimplePriorityQueue<MAPFNode> openList = new SimplePriorityQueue<MAPFNode>();
         Dictionary<Vector2Int, MAPFNode> closedList = new Dictionary<Vector2Int, MAPFNode>();
+        Dictionary<Vector2Int, MAPFNode> openListDict = new Dictionary<Vector2Int, MAPFNode>();
         List<MapNode> path = new List<MapNode>();
         MAPFNode workingNode;
 
@@ -70,18 +71,17 @@ public class STAStar
                 if (!closedList.ContainsKey(adjNode.position))
                 {
                     MAPFNode newNode = new MAPFNode(adjNode, workingNode.g+5, CalculateManhattan(adjNode, agent.destinationNode), 0, workingNode);
-                    bool found = false;
-                    foreach(MAPFNode node in openList)
-                    {
-                        if (node.PositionIsEqualTo(newNode.node))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
+                    if (!openListDict.ContainsKey(adjNode.position))
                     {
                         openList.Enqueue(newNode, newNode.GetCost());
+                        openListDict.Add(newNode.node.position, newNode);
+                    }
+                    else
+                    {
+                        if (openListDict[adjNode.position].GetCost() < newNode.GetCost())
+                        {
+                            openListDict[adjNode.position] = newNode;
+                        }
                     }
                 }
 
@@ -240,7 +240,7 @@ public class STAStar
                     {
                         openListDict[(newNode.node.position, newNode.time)].g = newNode.g;
                         openListDict[(newNode.node.position, newNode.time)].parent = workingNode;
-                        openListDict[(newNode.node.position, newNode.time)] = newNode;
+                        //openListDict[(newNode.node.position, newNode.time)] = newNode;
                     }
                     
                 }

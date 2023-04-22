@@ -47,6 +47,15 @@ public class MenuHandler : MonoBehaviour
             case 2:
                 selectedMap = "brc202d";
                 break;
+            case 3:
+                selectedMap = "random-64-64-20";
+                break;
+            case 4:
+                selectedMap = "maze-128-128-2";
+                break;
+            case 5:
+                selectedMap = "empty-32-32";
+                break;
 
 
         }
