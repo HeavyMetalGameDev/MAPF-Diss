@@ -19,7 +19,6 @@ public class GraphGrid : MonoBehaviour
     public static RefreshGrid refreshGrid;
     Dictionary<Vector2Int, Node> _nodeDict = new Dictionary<Vector2Int, Node>();
     Vector2Int[] _dirs = { new Vector2Int(0, 5), new Vector2Int(5, 0)};
-    AStarManager aStarManager = new AStarManager();
     BidirectionalGraph<Node, Edge<Node>> _gridGraph = new BidirectionalGraph<Node, Edge<Node>>(true);
     ConflictManager _cf = new ConflictManager();
     MapReader _mapReader = new MapReader();
@@ -193,11 +192,9 @@ public class GraphGrid : MonoBehaviour
     {
         foreach (AStarAgent agent in _AStarAgents)
         {
-            aStarManager.AttachGraph(_gridGraph);
             List<Edge<Node>> path = new List<Edge<Node>>();
             try
             {
-                path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
             }
             catch
             {
@@ -227,9 +224,8 @@ public class GraphGrid : MonoBehaviour
     }
     private void AStarAlgorithmOneAgent(AStarAgent agent)
     {
-        aStarManager.AttachGraph(_gridGraph);
         UnityEngine.Debug.Log(agent.currentNode);
-        List<Edge<Node>> path = aStarManager.ComputeAStarPath(agent.currentNode, agent.destinationNode).ToList();
+        List<Edge<Node>> path = null;
         agent.SetPath(path);
         UnityEngine.Debug.Log(path);
     }

@@ -6,8 +6,8 @@ using UnityEngine;
 [Serializable]
 public class MapNode: IEquatable<MapNode>
 {
-    [SerializeField] public Vector2Int position;
-    [SerializeField] public NodeTypeEnum nodeType;
+    public Vector2Int position;
+    public NodeTypeEnum nodeType;
     public GridMarker _nodeMarker;
     public bool isTargeted;
     public bool isOccupied;

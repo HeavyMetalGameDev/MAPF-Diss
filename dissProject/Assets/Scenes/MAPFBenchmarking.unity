@@ -257,11 +257,10 @@ MonoBehaviour:
   _nodePrefab: {fileID: 4560271229496798657, guid: c47a0a7acc5d63c48933c63e8f305346, type: 3}
   _camera: {fileID: 107405108}
   _MAPFAgents: []
-  _defaultMaterial: {fileID: 0}
-  _mapName: Assets/BenchmarkMaps/CBSTest.map
+  _mapName: maze-32-32-4
   _agentCount: 15
-  algorithmToUse: 
-  scenarioNum: 0
+  algorithmToUse: A*
+  scenarioNum: 1
 --- !u!33 &134071111
 MeshFilter:
   m_ObjectHideFlags: 0

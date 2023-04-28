@@ -15,7 +15,7 @@ public class STAStar
     RRAStar rraStar;
     UnityEngine.Object marker;
     int iterator;
-    public int finalTimestep;
+    public int finalTimestepThisAgent;
     int longestTimestep;
 
     public STAStar()
@@ -48,6 +48,7 @@ public class STAStar
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
+            openListDict.Remove(workingNode.node.position);
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
             {
                 while (workingNode.parent != null)
@@ -114,7 +115,7 @@ public class STAStar
             {
                 if (!reachedDestination)
                 {
-                    finalTimestep = workingNode.time;
+                    finalTimestepThisAgent = workingNode.time;
                     reachedDestination = true;
                 }
                 if (workingNode.time < timeOfLastConstraint)
@@ -130,9 +131,9 @@ public class STAStar
                         ProcessAdjacentNodes();
                         continue;
                     }
-                    if (finalTimestep > longestTimestep) //if this path is longer than any previous path, update longest timestep
+                    if (finalTimestepThisAgent > longestTimestep) //if this path is longer than any previous path, update longest timestep
                     {
-                        longestTimestep = finalTimestep;
+                        longestTimestep = finalTimestepThisAgent;
                     }
                 }
 

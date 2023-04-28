@@ -12,7 +12,6 @@ public class MAPFGraphGrid : MonoBehaviour
     [SerializeField] GameObject _nodePrefab;
     [SerializeField] GameObject _camera;
     [SerializeField] List<MAPFAgent> _MAPFAgents;
-    [SerializeField] Material _defaultMaterial;
     Dictionary<Vector2Int, MapNode> _nodeDict = new Dictionary<Vector2Int, MapNode>();
     List<List<MapNode>> _gridGraph = new List<List<MapNode>>();
     public Dictionary<int, RRAStar> agentRRAStarDict = new();
@@ -84,6 +83,7 @@ public class MAPFGraphGrid : MonoBehaviour
             {
                 break;
             }
+            break;
         }
 
     }
@@ -230,7 +230,7 @@ public class MAPFGraphGrid : MonoBehaviour
             }
             else
             {
-                sumOfCosts += _stAStar.finalTimestep;
+                sumOfCosts += _stAStar.finalTimestepThisAgent;
             }
             agent.SetPath(newPath);
 
