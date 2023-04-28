@@ -24,7 +24,7 @@ public class MAPFGraphGrid : MonoBehaviour
     public string algorithmToUse;
     public int scenarioNum;
 
-    STAStar _stAStar;
+    AStarManager _stAStar;
     CBSManager _cbsManager;
 
     public delegate void AgentArrived(MAPFAgent agent);
@@ -213,7 +213,7 @@ public class MAPFGraphGrid : MonoBehaviour
         _sw.Start();
         int iterationsAllowed = 20;
         sumOfCosts = 0;
-        _stAStar = new STAStar();
+        _stAStar = new AStarManager();
         iterationsAllowed--;
         foreach (MAPFAgent agent in _MAPFAgents)
         {
@@ -247,7 +247,7 @@ public class MAPFGraphGrid : MonoBehaviour
         _sw.Reset();
         _sw.Start();
         sumOfCosts = 0;
-        _stAStar = new STAStar();
+        _stAStar = new AStarManager();
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions);

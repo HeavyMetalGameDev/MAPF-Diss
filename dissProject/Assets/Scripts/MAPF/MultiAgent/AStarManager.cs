@@ -4,7 +4,7 @@ using UnityEngine;
 using Priority_Queue;
 using System.Diagnostics;
 
-public class STAStar
+public class AStarManager
 {
     public List<List<MapNode>> _graph = new List<List<MapNode>>();
     Vector2Int dimensions;
@@ -18,7 +18,7 @@ public class STAStar
     public int finalTimestepThisAgent;
     int longestTimestep;
 
-    public STAStar()
+    public AStarManager()
     {
         marker = Resources.Load("expanded marker");
     }

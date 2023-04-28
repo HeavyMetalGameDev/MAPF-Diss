@@ -149,7 +149,45 @@ public class CBSManager
 
     bool CheckIfPathViolatesConstraint(List<MapNode> path, Constraint constraint)
     {
-        if (path.Count <= constraint.timestep) return false;
+        MapNode nodeToCheck;
+        if (path.Count > constraint.timestep)
+        {
+            nodeToCheck = path[constraint.timestep];
+        }
+        else
+        {
+            nodeToCheck = path.Last();
+        }
+        if (constraint.isForNode)
+        {
+
+            if (nodeToCheck.Equals(constraint.node))
+            {
+                return true;
+            }
+            return false;
+        }
+        MapNode secondNodeToCheck;
+        if (path.Count > constraint.timestep+1)
+        {
+            secondNodeToCheck = path[constraint.timestep +1];
+        }
+        else
+        {
+            secondNodeToCheck = path.Last();
+        }
+        if (nodeToCheck.Equals(constraint.node) && secondNodeToCheck.Equals(constraint.node2))
+        {
+            return true;
+        }
+        else if (nodeToCheck.Equals(constraint.node2) && secondNodeToCheck.Equals(constraint.node))
+        {
+            return true;
+        }
+        return false;
+
+
+        /*if (path.Count <= constraint.timestep) return false;
         if (constraint.isForNode)
         {
             if (path[constraint.timestep].Equals(constraint.node))
@@ -170,7 +208,7 @@ public class CBSManager
                 return true;
             }
             return false;
-        }
+        }*/
 
     }
     public CBSManager(List<List<MapNode>> gridGraph, List<MAPFAgent> MAPFAgents, Vector2Int dimensions, bool disjointSplitting)
@@ -248,7 +286,7 @@ public class ConstraintTreeNode
 
             }
         }
-        STAStar sTAStar = new STAStar();
+        AStarManager sTAStar = new AStarManager();
         sTAStar.SetSTAStar(_gridGraph, dimensions,rraStar);
         sTAStar.rTable = agentConstraints;
         sTAStar.edgeTable = agentEdgeConstraints;
@@ -407,7 +445,5 @@ public class Constraint
     }
 
 }
-
-
 
 
