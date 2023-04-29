@@ -41,51 +41,59 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         AddNodesToGraph();
         CombineMapMeshes();
-        
+        scenarioNum = 1;
         //CreateRandomAgents(_agentCount);
         //RandomDestinationAllAgents();
-        
-        while (success)
+        while (scenarioNum != 11)
         {
-            foreach (MAPFAgent agent in _MAPFAgents)
+            while (success)
             {
-                Destroy(agent.gameObject);
-            }
-            prevAgentCount = _agentCount;
-            SetupScenario(scenarioNum);
-            
-            switch (algorithmToUse)
-            {
-                case "AStar":
-                    success = AStarAllAgents();
-                    break;
-                case "CAStar":
-                    SetupRRAStar();
-                    success = CoopAStarAllAgents(false);
-                    break;
-                case "HCAStar":
-                    SetupRRAStar();
-                    success = CoopAStarAllAgents(true);
-                    break;
-                case "CBS":
-                    SetupRRAStar();
-                    success = CBSAllAgents(false);
-                    break;
-                case "CBS-DS":
-                    SetupRRAStar();
-                    success = CBSAllAgents(true);
-                    break;
-            }
-            SolutionChecker();
-            WriteResultsToFile();
-            _agentCount++;
-            if (prevAgentCount == _agentCount)
-            {
-                break;
-            }
-            break;
-        }
+                foreach (MAPFAgent agent in _MAPFAgents)
+                {
+                    Destroy(agent.gameObject);
+                }
+                prevAgentCount = _agentCount;
+                SetupScenario(scenarioNum);
 
+                switch (algorithmToUse)
+                {
+                    case "AStar":
+                        success = AStarAllAgents();
+                        break;
+                    case "CAStar":
+                        SetupRRAStar();
+                        success = CoopAStarAllAgents(false);
+                        break;
+                    case "HCAStar":
+                        SetupRRAStar();
+                        success = CoopAStarAllAgents(true);
+                        break;
+                    case "CBS":
+                        SetupRRAStar();
+                        success = CBSAllAgents(false);
+                        break;
+                    case "CBS-DS":
+                        SetupRRAStar();
+                        success = CBSAllAgents(true);
+                        break;
+                }
+                if (success && (prevAgentCount == _agentCount))
+                {
+                    SolutionChecker();
+                    WriteResultsToFile();
+                }
+                _agentCount++;
+                if (prevAgentCount == _agentCount)
+                {
+                    break;
+                }
+            }
+            scenarioNum++;
+            success = true;
+            ResultsWriter.WriteBlank(algorithmToUse, _mapName);
+            _agentCount = 1;
+        }
+        
     }
     private void GetDataFromMapReader()
     {
@@ -211,10 +219,8 @@ public class MAPFGraphGrid : MonoBehaviour
     {
         _sw.Reset();
         _sw.Start();
-        int iterationsAllowed = 20;
         sumOfCosts = 0;
         _stAStar = new AStarManager();
-        iterationsAllowed--;
         foreach (MAPFAgent agent in _MAPFAgents)
         {
             _stAStar.SetSTAStar(_gridGraph, _mapDimensions, agentRRAStarDict[agent.agentId]);

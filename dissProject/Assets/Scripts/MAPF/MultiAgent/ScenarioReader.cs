@@ -7,7 +7,7 @@ public class ScenarioReader
     public List<MAPFAgent> ReadScenarioAgents(string mapName, int scenarioID, int agentCount, List<List<MapNode>> gridGraph, GameObject agentPrefab)
     {
         List<MAPFAgent> loadedAgents = new();
-        Debug.Log("Scenarios/" + mapName + ".map-scen-even/scen-even/" + mapName + "-even-" + scenarioID);
+        //Debug.Log("Scenarios/" + mapName + ".map-scen-even/scen-even/" + mapName + "-even-" + scenarioID);
         TextAsset scenario = (TextAsset)Resources.Load("Scenarios/" + mapName + ".map-scen-even/scen-even/" + mapName +"-even-" + scenarioID);
         List<string> agentsScenarioData = new List<string>(scenario.text.Split("\n"));
         agentsScenarioData.RemoveAt(0);

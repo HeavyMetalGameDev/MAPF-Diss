@@ -43,10 +43,12 @@ public class AStarManager
         Dictionary<Vector2Int, MAPFNode> openListDict = new Dictionary<Vector2Int, MAPFNode>();
         List<MapNode> path = new List<MapNode>();
         MAPFNode workingNode;
-
+        Stopwatch sw = new();
+        sw.Start();
         openList.Enqueue(source, source.GetCost());
         while (openList.Count != 0)
         {
+            if (sw.ElapsedMilliseconds > 30000) return null;
             workingNode = openList.Dequeue();
             openListDict.Remove(workingNode.node.position);
             if (workingNode.PositionIsEqualTo(agent.destinationNode))
