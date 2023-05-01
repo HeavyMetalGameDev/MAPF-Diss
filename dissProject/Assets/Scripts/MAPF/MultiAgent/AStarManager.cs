@@ -216,7 +216,7 @@ public class AStarManager
                 {
                     nodeHValue = CalculateManhattan(adjNode, agent.destinationNode);
                 }
-                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 1, nodeHValue, workingNode.time + 1, workingNode);
+                MAPFNode newNode = new MAPFNode(adjNode, workingNode.g + 5, nodeHValue, workingNode.time + 1, workingNode);
                 if (closedList.ContainsKey((adjNode.position, workingNode.time + 1)))
                 {
                     closedList.TryGetValue((adjNode.position, workingNode.time + 1), out MAPFNode closedListNode);

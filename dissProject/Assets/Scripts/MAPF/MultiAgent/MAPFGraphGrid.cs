@@ -41,11 +41,11 @@ public class MAPFGraphGrid : MonoBehaviour
         GetDataFromMapReader();
         AddNodesToGraph();
         CombineMapMeshes();
-        scenarioNum = 1;
+        //scenarioNum = 1;
         //CreateRandomAgents(_agentCount);
         //RandomDestinationAllAgents();
-        while (scenarioNum != 11)
-        {
+        //while (scenarioNum != 11)
+        //{
             while (success)
             {
                 foreach (MAPFAgent agent in _MAPFAgents)
@@ -79,20 +79,20 @@ public class MAPFGraphGrid : MonoBehaviour
                 }
                 if (success && (prevAgentCount == _agentCount))
                 {
-                    SolutionChecker();
-                    WriteResultsToFile();
+                    WriteCollisionsToFile(SolutionChecker());
+                    //WriteResultsToFile();
                 }
                 _agentCount++;
                 if (prevAgentCount == _agentCount)
                 {
-                    break;
+                    //break;
                 }
             }
             scenarioNum++;
             success = true;
-            ResultsWriter.WriteBlank(algorithmToUse, _mapName);
+            //ResultsWriter.WriteBlank(algorithmToUse, _mapName);
             _agentCount = 1;
-        }
+        //}
         
     }
     private void GetDataFromMapReader()
@@ -293,61 +293,58 @@ public class MAPFGraphGrid : MonoBehaviour
         return true;
     }
 
-    private void SolutionChecker()
+    private int SolutionChecker()
     {
+        Dictionary<(Vector2Int, int), MAPFAgent> positionsTimestep = new(); //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
+        Dictionary<(Vector2Int, Vector2Int, int), MAPFAgent> edgesTimestep = new();
+        int collisions = 0;
         int maxPathLength = 0;
-        foreach(MAPFAgent agent in _MAPFAgents)
+        foreach (MAPFAgent agent in _MAPFAgents)
         {
             if (agent.path.Count > maxPathLength)
             {
                 maxPathLength = agent.path.Count;
             }
         }
-        Dictionary<Vector2Int, MAPFAgent> positionsAtTimestep; //stores the positions of all checked agents at a timestep, so if there is duplicates then there is a collision
-        Dictionary<(Vector2Int, Vector2Int), MAPFAgent> edgesAtTimestep;
         for (int t = 0; t <= maxPathLength; t++)
         {
-
-            positionsAtTimestep = new();
-            edgesAtTimestep = new();
             foreach (MAPFAgent agent in _MAPFAgents)
             {
-
                 List<MapNode> agentPath = agent.path;
-                if (agentPath.Count <= t)
-                {
-                    //positionsAtTimestep.Add(agentPath[^1].position, agent);
-                    continue;
-                }
+                MapNode nodeAtTimestep = GetNodeAtTimestep(agent, t);
                 //if the agents path is shorter than t there cant be a collision so go to next agent
-                if (positionsAtTimestep.ContainsKey(agentPath[t].position))
+                if (positionsTimestep.ContainsKey((nodeAtTimestep.position, t)))
                 {
-                    MAPFAgent[] agents = { agent, positionsAtTimestep[agentPath[t].position] };
-                    //UnityEngine.Debug.Log("COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " at " + agentPath[t].position + " time " + (t));
+                    collisions++;
                 }
-
-                positionsAtTimestep.TryAdd(agentPath[t].position, agent);
+                positionsTimestep.TryAdd((nodeAtTimestep.position, t), agent);
+                //Debug.Log("ADDED " + agentPath[t].position + agent.agentId);
                 if (agentPath.Count <= t + 1) continue; //if there isnt a node at the next timestep continue
-                if (edgesAtTimestep.ContainsKey((agentPath[t].position, agentPath[t + 1].position)))
+                if (edgesTimestep.ContainsKey((agentPath[t].position, agentPath[t + 1].position, t)))
                 {
-                    MAPFAgent[] agents = { agent, edgesAtTimestep[(agentPath[t].position, agentPath[t + 1].position)] };
-                    //UnityEngine.Debug.Log("EDGE COLLISION WHEN PLANNING: Agent " + agent.agentId + " and Agent " + agents[1].agentId + " edge " + agentPath[t].position + "" + agentPath[t + 1].position + "time " + (t));
+                    collisions++;
                 }
 
                 if (!agentPath[t].position.Equals(agentPath[t + 1].position)) //only add an edge if the agent is travelling to a different node
                 {
-                    edgesAtTimestep.TryAdd((agentPath[t].position, agentPath[t + 1].position), agent);
-                    edgesAtTimestep.TryAdd((agentPath[t + 1].position, agentPath[t].position), agent); //reserve edge in opposite direction too
-                } 
-
+                    edgesTimestep.TryAdd((agentPath[t].position, agentPath[t + 1].position, t), agent);
+                    edgesTimestep.TryAdd((agentPath[t + 1].position, agentPath[t].position, t), agent); //reserve edge in opposite direction too
+                }
             }
-
         }
+        return collisions;
     }
 
     private void WriteResultsToFile()
     {
         ResultsWriter.WriteResult( _agentCount+ "\t" + executionTime + "\t" + sumOfCosts, algorithmToUse,_mapName);
+        //UnityEngine.Debug.Log(executionTime);
+        //UnityEngine.Debug.Log("SUM OF COSTS: " + sumOfCosts );
+    }
+
+    private void WriteCollisionsToFile(int collisionCount)
+    {
+        ResultsWriter.WriteCollisions(_agentCount + "\t" + collisionCount, algorithmToUse, _mapName);
         //UnityEngine.Debug.Log(executionTime);
         //UnityEngine.Debug.Log("SUM OF COSTS: " + sumOfCosts );
     }
@@ -371,6 +368,22 @@ public class MAPFGraphGrid : MonoBehaviour
         mesh.CombineMeshes(combine);
         transform.GetComponent<MeshFilter>().sharedMesh = mesh;
         transform.gameObject.SetActive(true);
+    }
+
+    public MapNode GetNodeAtTimestep(MAPFAgent agent, int timestep)
+    {
+        if (agent.path.Count == 0)
+        {
+            return agent.destinationNode;
+        }
+        if (agent.path.Count > timestep)
+        {
+            return agent.path[timestep];
+        }
+        else
+        {
+            return agent.path.Last();
+        }
     }
 
 }

@@ -24,6 +24,7 @@ public class RRAStar
         while (openList.Count != 0)
         {
             workingNode = openList.Dequeue();
+            openListDict.Remove(workingNode.node.position);
             closedList.Add(workingNode.node.position, workingNode);
 
             foreach (MapNode adjNode in GetAdjacentNodes(workingNode))
@@ -40,7 +41,8 @@ public class RRAStar
                     {
                         if(openListDict[adjNode.position].GetCost() < newNode.GetCost())
                         {
-                            openListDict[adjNode.position] = newNode;
+                            openListDict[adjNode.position].g = newNode.g;
+                            openListDict[adjNode.position].parent = workingNode;
                         }
                     }
                 }

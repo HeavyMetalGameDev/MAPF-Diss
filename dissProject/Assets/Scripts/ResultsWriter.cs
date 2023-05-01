@@ -21,4 +21,13 @@ public static class ResultsWriter
         writer.WriteLine("\n");
         writer.Close();
     }
+
+    public static void WriteCollisions(string result, string algorithm, string map)
+    {
+        string path = Application.persistentDataPath + "/" + algorithm + "-" + map + "collisions.txt";
+        //Debug.Log(path);
+        StreamWriter writer = new StreamWriter(path, true);
+        writer.WriteLine(result);
+        writer.Close();
+    }
 }
