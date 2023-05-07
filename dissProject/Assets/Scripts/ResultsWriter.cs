@@ -7,7 +7,7 @@ public static class ResultsWriter
 {
     public static void WriteResult(string result, string algorithm, string map)
     {
-        string path = Application.persistentDataPath + "/" + algorithm + "-" + map + ".txt";
+        string path = Application.persistentDataPath + "/demo/" + algorithm + "-" + map + ".txt";
         //Debug.Log(path);
         StreamWriter writer = new StreamWriter(path, true);
         writer.WriteLine(result);

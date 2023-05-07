@@ -10,8 +10,8 @@ public class MAPFGraphGrid : MonoBehaviour
     //[SerializeField] List<MAPFNode> _nodes;
     [SerializeField] GameObject _agentPrefab;
     [SerializeField] GameObject _nodePrefab;
-    [SerializeField] GameObject _camera;
     [SerializeField] List<MAPFAgent> _MAPFAgents;
+    [SerializeField] CameraController _cc;
     Dictionary<Vector2Int, MapNode> _nodeDict = new Dictionary<Vector2Int, MapNode>();
     List<List<MapNode>> _gridGraph = new List<List<MapNode>>();
     public Dictionary<int, RRAStar> agentRRAStarDict = new();
@@ -46,8 +46,8 @@ public class MAPFGraphGrid : MonoBehaviour
         //RandomDestinationAllAgents();
         //while (scenarioNum != 11)
         //{
-            while (success)
-            {
+            //while (success)
+            //{
                 foreach (MAPFAgent agent in _MAPFAgents)
                 {
                     Destroy(agent.gameObject);
@@ -79,7 +79,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 }
                 if (success && (prevAgentCount == _agentCount))
                 {
-                    WriteCollisionsToFile(SolutionChecker());
+                    //WriteCollisionsToFile(SolutionChecker());
                     //WriteResultsToFile();
                 }
                 _agentCount++;
@@ -87,7 +87,7 @@ public class MAPFGraphGrid : MonoBehaviour
                 {
                     //break;
                 }
-            }
+            //}
             scenarioNum++;
             success = true;
             //ResultsWriter.WriteBlank(algorithmToUse, _mapName);
@@ -100,8 +100,7 @@ public class MAPFGraphGrid : MonoBehaviour
         _mapDimensions = _mapReader.ReadMapFromFile(_mapName);
         _gridGraph = _mapReader.GetNodesFromMap();
 
-        _camera.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 3f, -_mapDimensions.y * 2.5f);
-        _camera.transform.LookAt(new Vector3(_mapDimensions.x * 2.5f, 0, _mapDimensions.y * 2.5f));
+        _cc.transform.position = new Vector3(_mapDimensions.x * 2.5f, _mapDimensions.y * 3f, -_mapDimensions.y * 2.5f);
     }
     private void AddNodesToGraph() //function will instantiate node gameobjects and add them to graph. additionally will set the correcsponding node address to be the new GameO.
     {
@@ -195,6 +194,7 @@ public class MAPFGraphGrid : MonoBehaviour
         ScenarioReader sr = new ScenarioReader();
         _MAPFAgents = sr.ReadScenarioAgents(_mapName, scenarioID, _agentCount, _gridGraph, _agentPrefab);
         _agentCount = _MAPFAgents.Count;
+        _cc.agents = _MAPFAgents;
     }
     private void CreateRandomAgents(int agentCount)
     {

@@ -78,6 +78,7 @@ public class MenuHandler : MonoBehaviour
     }
     private void OnEnable()
     {
+        Cursor.lockState = CursorLockMode.None;
         SceneManager.sceneLoaded += OnSceneLoad;
     }
     private void OnDisable()
