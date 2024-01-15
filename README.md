@@ -8,6 +8,8 @@ The algorithms I implemented were:
 - HCA* (Hierarchical Cooperative A*), a variant of Cooperative A* which uses RRA* as a heuristic.
 - CBS (Conflict Based Search), a search based algorithm which is guaranteed to find the lowest cost solution to a MAPF problem, whilst creating conflict free paths.
 
+If you decide to read the code of this project, it may be difficult, as the file structure and code structure is quite poor, but you are welcome to investigate. I have evolved and grown as a programmer since this project, and it does not reflect my current ability.
+
 Overall, the dissertation was moderately successful, as I succeeded in implementing a small selection of MAPF algorithms and my results were sound.
 My thoughts on the project now are as such:
 - The code I created for the project, whilst it mostly functioned as intended, was not very optimised and could be improved in many ways. Now I am a more competent programmer, the flaws in my program are more apparent.I will not chastise my past self too much however, as time was definitely a limiting factor during the project, and the amount of material to assist me in the project was relatively low, as MAPF is a somewhat niche field, especially in regards to videogame implementation.
